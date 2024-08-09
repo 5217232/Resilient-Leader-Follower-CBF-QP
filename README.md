@@ -10,8 +10,8 @@ For solving the CBF-QP, we need the following libraries: **cvxpy** and **gurobi*
 
 # How to Run
 In this repository, we have two different simulations: `corridor_sim` and `spread_out_sim`. 
-1) `corridor_sim` shows the simulation of $11$ robots going through a narrow space.
-2) `spread_out_sim` shows the simulation of $14$ robots spreading out in an open space.
+1) `corridor_sim` shows the simulation of robots going through a narrow space.
+2) `spread_out_sim` shows the simulation of robots spreading out in an open space.
    
 To run each simulation, you just need to run the corresponding python file. 
 
