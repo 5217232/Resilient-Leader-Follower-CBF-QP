@@ -17,7 +17,9 @@ To run each simulation, you just need to run the corresponding python file.
 
 | `corridor_sim` | `spread_out_sim` |
 | ------------- | ------------- |
-|  https://github.com/user-attachments/assets/76c63bd5-5547-4b9c-98d2-6bfcfbf738d0 |   https://github.com/user-attachments/assets/cd2f7ac8-91e0-44bd-a81e-58aa40822d62|
+| ![corridor_color_gif](https://github.com/user-attachments/assets/2a4defbf-c0c3-4e02-b54f-f816ef6ce434) |![spread_color-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/af534f0a-8f6c-447d-9262-f3dfd12ef501)|
+
+
 
 
 
