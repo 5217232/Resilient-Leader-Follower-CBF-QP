@@ -8,7 +8,6 @@ from double_integrator import *
 from random import randint
 import jax
 from jax import jit, lax
-from matplotlib.animation import FFMpegWriter
 
 
 def unsmoothened_adjacency(dif, A, robots):

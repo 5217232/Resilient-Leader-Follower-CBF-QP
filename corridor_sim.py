@@ -7,7 +7,6 @@ from obstacles import *
 from double_integrator import *
 from random import randint
 from jax import lax, jit, jacrev, hessian
-from matplotlib.animation import FFMpegWriter
 
 
 def unsmoothened_adjacency(dif, A, robots):
