@@ -4,11 +4,21 @@ This repository contains the implementation of Strong $r$-robustness maintenance
 
 
 # Dependencies
-This respository requires the following libraries: $\textbf{numpy}$, $\textbf{matplotlib}$, $\textbf{jax}$, and $\textbf{jaxlib}$.
-For solving the CBF-QP, we need the following libraries: $\textbf{cvxpy}$ and $\textbf{gurobi}$
+This respository requires the following libraries: **numpy**, **matplotlib**, **jax**, and **jaxlib**.
+
+For solving the CBF-QP, we need the following libraries: **cvxpy** and **gurobi**
 
 # How to Run
-In this repository, we have two different simulations: $\textbf{corridor_sim}$ and $\textbf{spread_out_sim}$. 
-1) $\textbf{corridor_sim}$ shows the simulation of $11$ robots going through a narrow space.
-2) $\textbf{spread_out_sim}$ shows the simulation of $14$ robots spreading out in an open space.
+In this repository, we have two different simulations: `corridor_sim` and `spread_out_sim`. 
+1) `corridor_sim` shows the simulation of $11$ robots going through a narrow space.
+2) `spread_out_sim` shows the simulation of $14$ robots spreading out in an open space.
+   
 To run each simulation, you just need to run the corresponding python file. 
+
+| `corridor_sim` | `spread_out_sim` |
+| ------------- | ------------- |
+|  https://github.com/user-attachments/assets/76c63bd5-5547-4b9c-98d2-6bfcfbf738d0 |   https://github.com/user-attachments/assets/cd2f7ac8-91e0-44bd-a81e-58aa40822d62|
+
+
+
+
