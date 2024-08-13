@@ -1,6 +1,6 @@
 # Resilient-Leader-Follower-CBF-QP-Controller
 
-This repository contains the implementation of Strong $r$-robustness maintenance CBF-QP Controller. This guarantees the multi-robot network to maintain the sufficient number of connections among robots such a way that the robots can perform leader-follower consensus despite the presence of misbehaving agents. The algorithm also includes inter-agent and obstacle collision avoidances HOCBFs. For more information, see our paper.
+This repository contains the implementation of Strong $r$-robustness maintenance CBF-QP Controller. This guarantees the multi-robot network to maintain the sufficient number of connections among robots such a way that the robots can perform leader-follower consensus despite the presence of misbehaving agents. Contrary to the previous works that either maintain graph topogies with known robustness or control indirect measures to control robustness, our CBF directly addresses robustness. The algorithm also includes inter-agent and obstacle collision avoidances HOCBFs. For more information, see our paper.
 
 
 # Dependencies
