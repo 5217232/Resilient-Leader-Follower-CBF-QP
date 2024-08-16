@@ -13,7 +13,7 @@ def unsmoothened_adjacency(dif, A, robots):
 #Calculates the real strong r robustness with an adjacency matrix
 def strongly_r_robust(A,leaders):
     n= len(A)
-    max_r = int(n/2) 
+    max_r = leaders 
     ans_r =0
     if n % 2==1:
         max_r+=1
