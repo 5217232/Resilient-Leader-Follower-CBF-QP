@@ -9,15 +9,17 @@ This respository requires the following libraries: **numpy**, **matplotlib**, **
 For solving the CBF-QP, we need the following libraries: **cvxpy** and **gurobi**
 
 # How to Run
-In this repository, we have two different simulations: `corridor_sim` and `spread_out_sim`. 
-1) `corridor_sim` shows the simulation of robots going through a narrow space.
-2) `spread_out_sim` shows the simulation of robots spreading out in an open space.
+In this repository, we have three different simulations: `spread_out_sim`, `complex_sim1`, and `complex_sim2`.
+1) `spread_out_sim` shows the simulation of robots spreading out in an open space.
+2) `complex_sim1` and `complex_sim2` show the simulation of robots going through some complex environments with obstacles.
    
 To run each simulation, you just need to run the corresponding python file. 
 
-| `corridor_sim` | `spread_out_sim` |
-| ------------- | ------------- |
-| ![corridor_color_gif](https://github.com/user-attachments/assets/2a4defbf-c0c3-4e02-b54f-f816ef6ce434) |![spread_color-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/af534f0a-8f6c-447d-9262-f3dfd12ef501)|
+|Name |Simulation|
+| -----------------| ------------------|
+| `spread_out_sim` | ![spread_out](https://github.com/user-attachments/assets/ddd7d555-b7ff-4532-a9d6-981a93473c33)|
+| `complex_sim1`   | ![complex1](https://github.com/user-attachments/assets/523627f3-56a5-43f5-bf99-92539215da26)|
+| `complex_sim2`   |![complex2](https://github.com/user-attachments/assets/281d881e-0c69-4457-b790-d3c3cde4077a)|
 
 
 
