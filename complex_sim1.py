@@ -197,9 +197,6 @@ while True:
             h_dot = dh_dxi @ robots_velocity[i] + dh_dxj @ robots_velocity[j] + col_alpha*h
             collision.append(h_dot)
             kk = num_robots-leaders+j
-            if h_dot < 0:
-                print("inter", h_dot)
-                print(i,j)
             temp = (weight[kk])*np.exp(-weight[kk]*h_dot)
             A1.value[0,2*i:2*i+2]+= temp * dh_dxi[:]
             A1.value[0,2*j:2*j+2]+= temp *dh_dxj[:]
@@ -221,8 +218,6 @@ while True:
         h_dot = der_[k].reshape(1,-1)[0] @ robots_velocity.reshape(-1,1)
         weightee = ((weight[k])*np.exp(-weight[k]*(h_dot+alphas*x[k])))[0]
         robustes.append((h_dot+alphas*x[k])[0])
-        if h_dot+alphas*x[k] <0:
-            print("robustness", h_dot+alphas*x[k])
         A1.value[0,:]+= weightee * der_[k].reshape(1,-1)[0]
 
         temp = []
