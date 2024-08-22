@@ -5,7 +5,7 @@ from scipy.integrate import odeint,solve_ivp
 
 
 class Agent:
-    def __init__(self,location, color, palpha, ax, F):
+    def __init__(self,location, color, palpha, ax, F,marker="o"):
         self.location = location.reshape(4,-1)
         self.locations = [[],[]]
         self.Uxs = []
@@ -13,10 +13,13 @@ class Agent:
         self.color = color
         self.LED = None
         self.palpha = palpha
-        self.body = ax.scatter([],[],c=color,alpha=palpha,s=50)
+        shape = marker
+        if type(self)==Leaders:
+            shape = "s"
+        self.body = ax.scatter([],[],c=color,alpha=palpha,s=50, marker=shape)
         self.obs_h = np.ones((1,2))
         self.obs_alpha =  2.0*np.ones((1,2))#
-        self.value= randint(0,100)
+        self.value= randint(0,500)
         self.original = self.value
         self.connections = []
         self.F = F
@@ -68,21 +71,7 @@ class Agent:
         self.x = loc[0:2]
         self.v = loc[2:]
         self.render_plot()
-    
-    def rk4_step(self, U):
-        self.U = U.reshape(2,-1)
-        def dydt(x):
-            return self.f() @ x + self.g() @ self.U
-
-        f1 = dydt(self.location)
-        f2 = dydt(self.location+0.5*0.01*f1)
-        f3 = dydt(self.location+0.5*0.01*f2)
-        f4 = dydt(self.location+0.01*f3)
-        self.location = self.location + (0.01/6)*(f1+2*f2+2*f3+f4)
-        self.x = self.location.reshape(1,-1)[0][0:2]
-        self.v = self.location.reshape(1,-1)[0][2:]
-        self.render_plot()
-    
+        
     def set_color(self):
         if self.value < 256:
             self.LED = (self.value/255, 0,0)
@@ -162,8 +151,8 @@ class Agent:
 
 
 class Leaders(Agent):
-    def __init__(self, value, location, color, palpha, ax, F):
-        super().__init__(location, color, palpha, ax, F)
+    def __init__(self, value, location, color, palpha, ax, F,marker="o"):
+        super().__init__(location, color, palpha, ax, F,marker)
         self.value=value
         self.history = []
 
@@ -179,10 +168,10 @@ class Leaders(Agent):
         self.connections =[]
     
 class Malicious(Leaders):
-    def __init__(self, range, location, color, palpha, ax, F):
+    def __init__(self, range, location, color, palpha, ax, F,marker="o"):
         self.range = range
         value = randint(range[0], range[1])
-        super().__init__(value, location, color, palpha, ax, F)
+        super().__init__(value, location, color, palpha, ax, F,marker)
     def propagate(self):
         self.value = randint(self.range[0], self.range[1])
         for neigh in self.neighbors():

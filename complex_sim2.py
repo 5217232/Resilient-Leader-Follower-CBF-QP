@@ -1,3 +1,4 @@
+import time
 import helper.bootstrap_percolation as dp
 import cvxpy as cp
 import matplotlib.pyplot as plt
@@ -6,69 +7,71 @@ from jax import numpy as jnp
 from helper.obstacles import *
 from helper.double_integrator import *
 from random import randint
-import jax
-from jax import jit, lax
+from jax import lax, jit, jacrev, hessian
 
 
 def unsmoothened_adjacency(dif, A, robots):
     n= len(robots)
     for i in range(n):
         for j in range(i+1, n):
-            norm = np.linalg.norm(robots[i]-robots[j])
+            norm = jnp.linalg.norm(robots[i]-robots[j])
             if norm <= dif:
                 A[i,j] =1
                 A[j,i] =1
 
-
-def unsmoothened_adjacency(dif, A, robots):
-    n = len(A)
-    for i in range(n):
-        for j in range(i+1, n):
-            norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
-                A[i][j] =1
-                A[j][i] = 1
-
 plt.ion()
 fig = plt.figure()
-ax = plt.axes(xlim=(-3,3),ylim=(-3,3)) 
+ax = plt.axes(xlim=(-5,5),ylim=(-5,7)) 
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
+# ax.set_aspect(1)
 
+########################## Make Obatacles ###############################
+obstacles = []
+index = 0
+x1 = -1.2#-1.0
+x2 = 1.2 #1.0
+radius = 0.6
+y_s = 0
+
+obstacles.append(circle(-1.8, 1.7,radius,ax,0))
+obstacles.append(circle(0, 4.0,radius,ax,0))
+obstacles.append(circle(-0.5, 0.5,radius,ax,0))
+obstacles.append(circle(1.5, 1.2,radius,ax,0))
+obstacles.append(circle(-1.2, 2.3,radius,ax,0))
+obstacles.append(circle(-0.5, 3.3,radius,ax,0))
+obstacles.append( circle( 1.75,4,radius,ax,0 ) )
+
+num_obstacles = len(obstacles)
+########################################################################
 
 # Sim Parameters                  
-dt = 0.05
-tf = 17.50 
-num_steps = int(tf/dt)
-
-
-#Initialize robots 
+num_steps = 800
 robots = []
-leaders = 6
-F = int((leaders-1)/2)
+y_offset = -1.5
+leaders = 4
+F = 1
 broadcast_value = randint(600,766)
-y_offset = -0.3 
-#Initialize robots 
-
-robots.append( Leaders(broadcast_value, jnp.array([-1.5,y_offset,0,0]),'b',1.0, ax,F))
-robots.append( Leaders(broadcast_value, jnp.array([-0.7,y_offset+0.2,0,0]),'b',1.0, ax, F))
-robots.append( Leaders(broadcast_value, jnp.array([1,y_offset+0.2,0,0]),'b',1.0, ax, F))
-robots.append( Leaders(broadcast_value, jnp.array([0.7,y_offset + 1.5,0,0]),'b',1.0, ax, F))
-robots.append( Leaders(broadcast_value, jnp.array([0.2,y_offset-1,0,0]),'b',1.0, ax, F))
-robots.append( Malicious([0,500], jnp.array([-1.1,y_offset - 0.7,0,0]),'r',1.0, ax, F,marker="s"))
-robots.append( Malicious([0,500], jnp.array([1.4,y_offset,0,0]),'r',1.0, ax, F))
-robots.append( Agent(jnp.array([-1.2,y_offset - 0.3,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(jnp.array([0.7,y_offset + 0.3,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(jnp.array([1.2,y_offset - 0.9,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(jnp.array([-0.8,y_offset + 1.1,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(jnp.array([1.1,y_offset - 0.4,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(jnp.array([-0.4,y_offset + 0.2,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(jnp.array([-0.1,y_offset + 0.3,0,0]),'g',1.0 , ax, F))
-
+robots.append( Leaders(broadcast_value, np.array([-0.8,y_offset,0,0]),'b',1.0, ax,F))
+robots.append( Leaders(broadcast_value, np.array([0,y_offset,0,0]),'b',1.0, ax, F))
+robots.append( Leaders(broadcast_value, np.array([-1.1,y_offset - 1.2,0,0]),'b',1.0, ax, F))
+robots.append( Leaders(broadcast_value, np.array([1,y_offset - 1.4,0,0]),'b',1.0, ax, F))
+robots.append( Agent(np.array([-0.2,y_offset - 1.4,0,0]),'g',1.0, ax, F))
+robots.append( Agent(np.array([-1.2,y_offset - 2.3,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([0.8,y_offset - 1.1,0,0]),'g',1.0 , ax, F))
+robots.append( Malicious([0,500],np.array([1.4,y_offset - 1.7,0,0]),'r',1.0 , ax, F))
+robots.append( Agent(np.array([1.0,y_offset - 2.1,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([-0.8,y_offset - 1.6,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([0.2,y_offset - 0.5,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([-0.4,y_offset - 1.7,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([0.5,y_offset - 0.6,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([0.1,y_offset - 1.5,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([-0.5,y_offset - 1.1,0,0]),'g',1.0 , ax, F))
 num_robots = n =len(robots)
 inter_collision = int(n*(n-1)/2)
+############################## Optimization problems ######################################
 
-############################## CBF Controller ######################################
+# ###### 1: CBF Controller
 u1 = cp.Variable((2*n,1))
 u1_ref = cp.Parameter((2*n,1),value = np.zeros((2*n,1)) )
 num_constraints1  = 1
@@ -79,30 +82,24 @@ objective1 = cp.Minimize( cp.sum_squares( u1 - u1_ref  ) )
 cbf_controller = cp.Problem( objective1, const1 )
 ###################################################################################################
 dif = 3
-r=leaders-1
+# r=1
+r= 3
 
 
 #Setting the goal
 goal = []
-goal.append(np.array([-100, 0]).reshape(2,-1))
-goal.append(np.array([-100, 100]).reshape(2,-1))
-goal.append(np.array([100, 100]).reshape(2,-1))
-goal.append(np.array([100, 0]).reshape(2,-1))
-goal.append(np.array([100, -100]).reshape(2,-1))
-goal.append(np.array([-100, -100]).reshape(2,-1))
-
+destinations = [0 for i in range(leaders)]
+for k in range(leaders):
+    goal.append(np.array([destinations[k % leaders], 10]).reshape(2,-1))
 robustness_history = []
 H = [[] for i in range(n-leaders)]
-
-
-#Construct the robustness HOCBF 
+u_r =[];u_l=[]
 q1 = 0.02
 p1 = jnp.log(1/q1)
 q2 = 0.02
 p2 = jnp.log(1/q2)
-s_A = 6
-s = 3
-
+s_A = 8
+s = 2.5
 relu = lambda x: (1+q1)/(1+jnp.exp(-s_A*x+p1))-q1
 relu2 = lambda x: (1+q2)/(1+jnp.exp(-s*x+ p2))-q2
 
@@ -124,44 +121,43 @@ def barrier_func(x):
     state_vector = jnp.array([0.0 for p in range(n-leaders)])
     A = AA(x)
     delta = 4
-    x = jax.lax.fori_loop(0, delta, body, state_vector) 
+    x = lax.fori_loop(0, delta, body, state_vector) 
     return x
 
-barrier_grad = jit(jax.jacrev(barrier_func))
-barrier_double_grad = jit(jax.hessian(barrier_func))
+barrier_grad = jit(jacrev(barrier_func))
+barrier_double_grad = jit(hessian(barrier_func))
 
-def smoothened_strongly_r_robust_simul(robots, dif, r):      
+def smoothened_strongly_r_robust_simul(robots, dif, r):   
     h = barrier_func(robots)
     h_dot = barrier_grad(robots)
     h_ddot =  barrier_double_grad(robots)
     return h, h_dot, h_ddot
 
-#Set the values of \mathbf w
-weight = np.array([7]*(num_robots-leaders) + [10]*inter_collision)
 
-#Compiled the construction of robust maintenance HOCBF
-compiled = jax.jit(smoothened_strongly_r_robust_simul)
+weight = np.array([6]*(num_robots-leaders) + [18]*inter_collision + [18]*(num_obstacles*n))
+compiled = jit(smoothened_strongly_r_robust_simul)
 
-for t in range(num_steps):    
+
+counter = 0
+
+while True:   
     robots_location = np.array([aa.x.reshape(1,-1)[0] for aa in robots])
     robots_velocity = np.array([aa.v.reshape(1,-1)[0] for aa in robots])
-
-    #Compute the actual robustness
     A = np.zeros((n, n))
-    dp.unsmoothened_adjacency(dif, A, robots_location)
-    robustness_history.append(dp.strongly_r_robust(A,leaders))
+    unsmoothened_adjacency(dif, A, robots_location)
+    delta = np.count_nonzero(A)
+    robustness_history.append(dp.strongly_r_robust(A,leaders, delta))
 
-    #Get the nominal control input \mathbf u_{nom}
-    for i in range(leaders):
+    #Get the nominal control input
+    for i in range(n):
         vector = goal[i % leaders] - robots[i].location[:2] 
         vector = vector/np.linalg.norm(vector)
         current = robots[i].location[2:4] 
         temp = np.array([[vector[0][0]-current[0]], [vector[1][0]-current[1]]])
         u1_ref.value[2*i] = temp[0][0]
         u1_ref.value[2*i+1] = temp[1][0]
-
-    #Perform W-MSR and update their LED colors
-    if t/20 % 1==0:
+    #Perform W-MSR
+    if counter/25 % 1==0:
         for i in range(n):
             for j in range(i+1,n):
                 if A[i,j] ==1:
@@ -175,35 +171,50 @@ for t in range(num_steps):
             aa.set_color()
 
     # h_{3,c}, gradient, and hessian
+    
     x, der_, double_der_  = compiled(robots_location, dif, r)
-    x = np.asarray(x);der_ = np.asarray(der_);double_der_ = np.asarray(double_der_)
-    print(t, x)
+    x=np.asarray(x);der_=np.asarray(der_);double_der_=np.asarray(double_der_)
+    print(counter, x)
+
 
     A1.value[0,:] = [0 for i in range(2*num_robots)]
     b1.value[0] = 0
 
-    #Inter-agent collision avoidance
-    collision = [];col_alpha = 6
+    #Obstacle Collision avoidance and Inter-agent collision avoidance
+    collision = [];ob=[]
+    col_alpha = 1.5; obs_alpha = 1.75
     for i in range(num_robots):
         for j in range(i+1, num_robots):
-            h, dh_dxi, dh_dxj, ddh = robots[i].agent_barrier(robots[j], 0.3)
+            h, dh_dxi, dh_dxj, ddh = robots[i].agent_barrier(robots[j], 0.30)
             h_dot = dh_dxi @ robots_velocity[i] + dh_dxj @ robots_velocity[j] + col_alpha*h
             collision.append(h_dot)
             kk = num_robots-leaders+j
+            if h_dot < 0:
+                print("inter", h_dot)
+                print(i,j)
             temp = (weight[kk])*np.exp(-weight[kk]*h_dot)
             A1.value[0,2*i:2*i+2]+= temp * dh_dxi[:]
             A1.value[0,2*j:2*j+2]+= temp *dh_dxj[:]
             b1.value[0]-=  temp *(2* robots_velocity[i].reshape(1,-1)[0] @  robots_velocity[i] - 2* robots_velocity[i].reshape(1,-1)[0] @  robots_velocity[j] + col_alpha*dh_dxi @ robots_velocity[i])
             b1.value[0]-=  temp *(2* robots_velocity[j].reshape(1,-1)[0] @  robots_velocity[j] - 2* robots_velocity[i].reshape(1,-1)[0] @  robots_velocity[j] + col_alpha*dh_dxj @ robots_velocity[j])
+        for j in range(num_obstacles):
+            h, dh_dxi, dh_dxj, ddh = robots[i].agent_barrier(obstacles[j],obstacles[j].radius+0.1)
+            h_dot =  dh_dxi @ robots_velocity[i] + obs_alpha*h
+            ob.append(h_dot)
+            kk = num_robots-leaders+inter_collision+j
+            temp = (weight[kk])*np.exp(-weight[kk]*h_dot)
+            A1.value[0,2*i:2*i+2]+= temp * dh_dxi[:]
+            b1.value[0]-= temp *(2* robots_velocity[i].reshape(1,-1)[0] @  robots_velocity[i] + obs_alpha*dh_dxi @ robots_velocity[i])
     
-    
-    #Calculate the Robustness HOCBF 
-    alphas = 2.5
+    #Robustness HOCBF 
+    alphas = 0.6
     robustes = []
     for k in range(num_robots-leaders):
         h_dot = der_[k].reshape(1,-1)[0] @ robots_velocity.reshape(-1,1)
         weightee = ((weight[k])*np.exp(-weight[k]*(h_dot+alphas*x[k])))[0]
         robustes.append((h_dot+alphas*x[k])[0])
+        if h_dot+alphas*x[k] <0:
+            print("robustness", h_dot+alphas*x[k])
         A1.value[0,:]+= weightee * der_[k].reshape(1,-1)[0]
 
         temp = []
@@ -213,43 +224,48 @@ for t in range(num_steps):
             temp.append(temp_x[0])
             temp.append(temp_y[0]) 
         b1.value[0]-= weightee * ((np.array(temp).reshape(1,-1) + alphas*der_[k].reshape(1,-1)) @ robots_velocity.reshape(-1,1))[0]
-    
+        
     for i in range(n-leaders):
-            H[i].append(float(x[i]))
+        H[i].append(x[i])
 
-    #Composition of HOCBFs
-    sum_h = 1 - np.sum(np.exp(-weight*np.array(robustes + collision)))
-    b1.value[0]-=2*(sum_h)
+    #Composition 
+    sum_h = 1 - np.sum(np.exp(-weight*np.array(robustes + collision + ob)))
+    b1.value[0]-=2.2*(sum_h)
 
     #Solve the CBF-QP and get the control input \mathbf u
     cbf_controller.solve(solver=cp.GUROBI)
     if cbf_controller.status!='optimal':
         print("Error: should not have been infeasible here")
         print(A1.value)
-
     # implement control input \mathbf u and plot the trajectory
     for i in range(num_robots):
         robots[i].step2( u1.value[2*i:2*i+2]) 
-        if t>0:
-            plt.plot(robots[i].locations[0][t-1:t+1], robots[i].locations[1][t-1:t+1], color = robots[i].LED, zorder=0) 
-
+        if counter>0:
+            plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
     fig.canvas.draw()
-    fig.canvas.flush_events()
+    fig.canvas.flush_events()  
+    for aa in robots_location:
+        if aa[1]<=4.0:
+            break
+    else:
+        break
+    counter+=1
 
-
+counter+=1
 
 plt.ioff()
 fig2 = plt.figure()
 
-plt.plot(range(num_steps),robustness_history,label="robustness")
+#Plot the robustness history
+plt.plot(range(counter),robustness_history,label="robustness")
 plt.title("Strongly $r$-robustness")
 plt.show()
 
 #Plot the evolutions of h_{r,c}'s values
 for i in range(n-leaders):
-    plt.plot(range(num_steps), H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
-plt.plot(range(num_steps), [0]*num_steps,linestyle='dashed', label="Safety Line", color = 'black')
-plt.legend(loc='upper right')
+    plt.plot(range(counter), H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
+plt.plot(range(counter), [0]*len(range(counter)),linestyle='dashed', label="Safety Line", color = 'black')
+# plt.legend(loc='upper right')
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
