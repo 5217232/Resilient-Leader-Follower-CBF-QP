@@ -4,7 +4,7 @@ This repository contains the implementation of Strong $r$-robustness maintenance
 
 
 # Dependencies
-This respository requires the following libraries: **numpy**, **matplotlib**, **jax**, and **jaxlib**.
+This repository requires the following libraries: **numpy**, **matplotlib**, **jax**, and **jaxlib**.
 
 For solving the CBF-QP, we need the following libraries: **cvxpy** and **gurobi**
 
