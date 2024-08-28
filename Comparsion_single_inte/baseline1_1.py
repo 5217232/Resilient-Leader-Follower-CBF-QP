@@ -33,12 +33,12 @@ def generate_random_strongly_r_g(n, leaders, AA):
 
 
 
-def unsmoothened_adjacency(dif, A, robots):
+def unsmoothened_adjacency(R, A, robots):
     n= len(robots)
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
+            if norm <= R:
                 A[i,j] =1
                 A[j,i] =1
 
@@ -46,7 +46,7 @@ def unsmoothened_adjacency(dif, A, robots):
 y_offset =-1.5
 F = 0
 leaders = 4
-dif =2.5
+R =2.5
 inter_agent_collision =0.3
 
 num_steps = 2500
@@ -118,7 +118,7 @@ for ii in range(50):
     robots_location = np.array([aa.location for aa in robots])
 
     A = np.zeros((n, n))
-    unsmoothened_adjacency(dif, A, robots_location)
+    unsmoothened_adjacency(R, A, robots_location)
     randomly_generated_fixed_topology = generate_random_strongly_r_g(n, leaders, A)
 
 
@@ -139,7 +139,7 @@ for ii in range(50):
     while True:
         robots_location = np.array([aa.location for aa in robots])
         A = np.zeros((n, n))
-        unsmoothened_adjacency(dif, A, robots_location)
+        unsmoothened_adjacency(R, A, robots_location)
         delta = np.count_nonzero(A)
         dp.strongly_r_robust(A,leaders, delta)
         print(ii, "-t:",counter*0.02," and edges:", delta)
@@ -165,7 +165,7 @@ for ii in range(50):
                 
         connections = 0
         for (i,j) in randomly_generated_fixed_topology:
-            h = dif - np.linalg.norm(robots_location[i]-robots_location[j])
+            h = R - np.linalg.norm(robots_location[i]-robots_location[j])
             dh_dxi= -2*(robots_location[i]-robots_location[j]).T
             A1.value[connections][2*i:2*i+2] = dh_dxi
             A1.value[connections][2*j:2*j+2] = -dh_dxi

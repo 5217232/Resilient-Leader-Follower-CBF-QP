@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 from jax import lax, jit, jacrev, hessian
 from jax import numpy as jnp
 
-def unsmoothened_adjacency(dif, A, robots):
+def unsmoothened_adjacency(R, A, robots):
     n= len(robots)
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
+            if norm <= R:
                 A[i,j] =1
                 A[j,i] =1
 
@@ -90,7 +90,7 @@ cbf_controller = cp.Problem( objective1, const1 )
 
 inter_agent_collision =0.3
 obtacle=0.7
-dif =2.5
+R =2.5
 num_steps = 2000
 leaders = 4
 goal = []
@@ -98,22 +98,19 @@ goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
-alpha = 10
+
 inter_alpha = 2
 obs_alpha = 2
 
-num_edges =[]
 counter = 0
 r = leaders-1
 
-q1 = 0.02
-p1 = jnp.log(1/q1)
-q2 = 0.02
-p2 = jnp.log(1/q2)
+q_A = 0.02
+q = 0.02
 s_A = 8
 s = 3
-relu = lambda x: (1+q1)/(1+jnp.exp(-s_A*x+p1))-q1
-relu2 = lambda x: (1+q2)/(1+jnp.exp(-s*x+ p2))-q2
+sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
+sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
 @jit 
 def barrier_func(x):
@@ -121,13 +118,13 @@ def barrier_func(x):
         A = jnp.array([[0.0 for i in range(n)] for j in range(n)]) 
         for i in range(n):
             for j in range(i+1, n):
-                dis = dif-jnp.linalg.norm(x[i]-x[j])
-                A = A.at[j,i].set(relu(dis))
-                A = A.at[i,j].set(relu(dis))  
+                dis = R-jnp.linalg.norm(x[i]-x[j])
+                A = A.at[j,i].set(sigmoid_A(dis))
+                A = A.at[i,j].set(sigmoid_A(dis))  
         return A
     def body(i, inputs):
         temp_x = A @ jnp.concatenate([jnp.array([1.0 for p in range(leaders)]),inputs])
-        state_vector = relu2(temp_x[leaders:]-r)
+        state_vector = sigmoid(temp_x[leaders:]-r)
         return state_vector
     
     state_vector = jnp.array([0.0 for p in range(n-leaders)])
@@ -138,7 +135,7 @@ def barrier_func(x):
 
 barrier_grad = jit(jacrev(barrier_func))
 
-def smoothened_strongly_r_robust_simul(robots, dif, r):   
+def smoothened_strongly_r_robust_simul(robots, R, r):   
     h = barrier_func(robots)
     h_dot = barrier_grad(robots)
     return h, h_dot
@@ -150,7 +147,7 @@ compiled = jit(smoothened_strongly_r_robust_simul)
 while True:
     robots_location = np.array([aa.location for aa in robots])
     A = np.zeros((n, n))
-    unsmoothened_adjacency(dif, A, robots_location)
+    unsmoothened_adjacency(R, A, robots_location)
     delta = np.count_nonzero(A)
     dp.strongly_r_robust(A,leaders, delta)
 
@@ -174,7 +171,7 @@ while True:
         for aa in robots:
             aa.set_color()
             
-    x, der_  = compiled(robots_location, dif, r)
+    x, der_  = compiled(robots_location, R, r)
     x=np.asarray(x);der_=np.asarray(der_)
     print("t:",counter*0.02," and edges:", delta)
     print(x)
@@ -227,8 +224,8 @@ while True:
         robots[i].step( u1.value[2*i:2*i+2]) 
         
 
-    fig.canvas.draw()
-    fig.canvas.flush_events()    
+    # fig.canvas.draw()
+    # fig.canvas.flush_events()    
     for aa in robots_location:
         if aa[1]<=4.0:
             break

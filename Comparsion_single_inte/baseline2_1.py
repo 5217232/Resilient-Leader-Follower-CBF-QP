@@ -7,12 +7,12 @@ from models.single_integrator import *
 from models.obstacles import *
 import matplotlib.pyplot as plt
 
-def unsmoothened_adjacency(dif, A, robots):
+def unsmoothened_adjacency(R, A, robots):
     n= len(robots)
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
+            if norm <= R:
                 A[i,j] =1
                 A[j,i] =1
 
@@ -89,18 +89,10 @@ cbf_controller = cp.Problem( objective1, const1 )
 
 inter_agent_collision =0.3
 obtacle=0.7
-dif =2.5
+R =2.5
 num_steps = 1000
 leaders = 4
 goal = []
-# goal.append(np.array([-100, 0]).reshape(2,-1))
-# goal.append(np.array([-100, 100]).reshape(2,-1))
-# goal.append(np.array([100, 100]).reshape(2,-1))
-# goal.append(np.array([100, 0]).reshape(2,-1))
-# goal.append(np.array([100, -100]).reshape(2,-1))
-# goal.append(np.array([-100, -100]).reshape(2,-1))
-
-
 goal.append(np.array([0,100]).reshape(2,-1))
 goal.append(np.array([0,100]).reshape(2,-1))
 goal.append(np.array([0,100]).reshape(2,-1))
@@ -116,7 +108,7 @@ counter =0
 while True:
     robots_location = np.array([aa.location for aa in robots])
     A = np.zeros((n, n))
-    unsmoothened_adjacency(dif, A, robots_location)
+    unsmoothened_adjacency(R, A, robots_location)
     delta = np.count_nonzero(A)
     dp.strongly_r_robust(A,leaders, delta)
 
@@ -139,7 +131,7 @@ while True:
         for aa in robots:
             aa.set_color()
 
-    algebraic, beta = eig.mu_m(robots_location,dif)
+    algebraic, beta = eig.mu_m(robots_location,R)
     print("t:",counter*0.02," and edges:", delta)
     algebraic = np.real(algebraic)
     A1.value[0:,] = beta[:]

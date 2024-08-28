@@ -81,7 +81,7 @@ cbf_controller = cp.Problem( objective1, const1 )
 
 inter_agent_collision =0.3
 obtacle=0.7
-dif =2.5
+dif =3
 num_steps = 1000
 leaders = 4
 goal = []
