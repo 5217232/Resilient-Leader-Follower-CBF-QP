@@ -45,13 +45,14 @@ obstacles.append( circle( 1.75,4,radius,ax,0 ) )
 num_obstacles = len(obstacles)
 ########################################################################
 
-# Sim Parameters                  
+# Sim Parameters 
+dt = 0.025                 
 num_steps = 800
 robots = []
 y_offset = -1.5
 leaders = 4
 F = 1
-broadcast_value = randint(600,766)
+broadcast_value = randint(600,1000)
 robots.append( Leaders(broadcast_value, np.array([-0.8,y_offset,0,0]),'b',1.0, ax,F))
 robots.append( Leaders(broadcast_value, np.array([0,y_offset,0,0]),'b',1.0, ax, F))
 robots.append( Leaders(broadcast_value, np.array([-1.1,y_offset - 1.2,0,0]),'b',1.0, ax, F))
@@ -145,8 +146,8 @@ while True:
     robots_velocity = np.array([aa.v.reshape(1,-1)[0] for aa in robots])
     A = np.zeros((n, n))
     unsmoothened_adjacency(dif, A, robots_location)
-    delta = np.count_nonzero(A)
-    robustness_history.append(dp.strongly_r_robust(A,leaders, delta))
+    f = n-leaders
+    robustness_history.append(dp.strongly_r_robust(A,leaders, f))
 
     #Get the nominal control input
     for i in range(n):
@@ -258,8 +259,8 @@ plt.show()
 
 #Plot the evolutions of h_{r,c}'s values
 for i in range(n-leaders):
-    plt.plot(range(counter), H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
-plt.plot(range(counter), [0]*len(range(counter)),linestyle='dashed', label="Safety Line", color = 'black')
+    plt.plot(np.arange(counter)*dt, H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
+plt.plot(np.arange(counter)*dt, [0]*len(range(counter)),linestyle='dashed', label="Safety Line", color = 'black')
 # plt.legend(loc='upper right')
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")

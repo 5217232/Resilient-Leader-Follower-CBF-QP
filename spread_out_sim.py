@@ -37,8 +37,8 @@ ax.set_ylabel("Y")
 
 
 # Sim Parameters                  
-dt = 0.05
-tf = 17.50 
+dt = 0.025
+tf = 15
 num_steps = int(tf/dt)
 
 
@@ -46,7 +46,7 @@ num_steps = int(tf/dt)
 robots = []
 leaders = 6
 F = int((leaders-1)/2)
-broadcast_value = randint(600,766)
+broadcast_value = randint(600,1000)
 y_offset = -0.3 
 #Initialize robots 
 
@@ -149,7 +149,8 @@ for t in range(num_steps):
     #Compute the actual robustness
     A = np.zeros((n, n))
     dp.unsmoothened_adjacency(dif, A, robots_location)
-    robustness_history.append(dp.strongly_r_robust(A,leaders))
+    f = n-leaders
+    robustness_history.append(dp.strongly_r_robust(A,leaders, f))
 
     #Get the nominal control input \mathbf u_{nom}
     for i in range(leaders):
@@ -247,9 +248,9 @@ plt.show()
 
 #Plot the evolutions of h_{r,c}'s values
 for i in range(n-leaders):
-    plt.plot(range(num_steps), H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
-plt.plot(range(num_steps), [0]*num_steps,linestyle='dashed', label="Safety Line", color = 'black')
-plt.legend(loc='upper right')
+    plt.plot(np.arange(num_steps)*dt, H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
+plt.plot(np.arange(num_steps)*dt, [0]*num_steps,linestyle='dashed', label="Safety Line", color = 'black')
+# plt.legend(loc='upper right')
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")

@@ -1,7 +1,8 @@
 import numpy as np
 from random import randint
 from scipy.integrate import odeint,solve_ivp 
-
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 
 class Agent:
@@ -19,7 +20,7 @@ class Agent:
         self.body = ax.scatter([],[],c=color,alpha=palpha,s=50, marker=shape)
         self.obs_h = np.ones((1,2))
         self.obs_alpha =  2.0*np.ones((1,2))#
-        self.value= randint(0,500)
+        self.value= randint(0,300)
         self.original = self.value
         self.connections = []
         self.F = F
@@ -73,15 +74,12 @@ class Agent:
         self.render_plot()
         
     def set_color(self):
-        if self.value < 256:
-            self.LED = (self.value/255, 0,0)
-            return self.LED
-        elif self.value < 511:
-            self.LED = (0.1, (self.value-256)/255,0.0)
-            return self.LED
-        else:
-            self.LED = (0.9, 0.5, (self.value-511)/255)
-            return self.LED
+        # Get the colormap
+        cmap = plt.get_cmap('viridis')
+        # Map the value to the colormap
+        rgba = cmap(self.value/1000)
+        self.LED = [rgba[0], rgba[1], rgba[2]]
+        return self.LED
     
     def render_plot(self):
         # scatter plot update
