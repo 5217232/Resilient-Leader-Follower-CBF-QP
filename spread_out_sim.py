@@ -10,22 +10,22 @@ import jax
 from jax import jit, lax
 
 
-def unsmoothened_adjacency(dif, A, robots):
+def unsmoothened_adjacency(R, A, robots):
     n= len(robots)
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
+            if norm <= R:
                 A[i,j] =1
                 A[j,i] =1
 
 
-def unsmoothened_adjacency(dif, A, robots):
+def unsmoothened_adjacency(R, A, robots):
     n = len(A)
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
+            if norm <= R:
                 A[i][j] =1
                 A[j][i] = 1
 
@@ -78,9 +78,10 @@ const1 = [A1 @ u1 >= b1]
 objective1 = cp.Minimize( cp.sum_squares( u1 - u1_ref  ) )
 cbf_controller = cp.Problem( objective1, const1 )
 ###################################################################################################
-dif = 3
+R = 3
 r=leaders-1
-
+robustness_history = []
+H = [[] for i in range(n-leaders)]
 
 #Setting the goal
 goal = []
@@ -91,20 +92,14 @@ goal.append(np.array([100, 0]).reshape(2,-1))
 goal.append(np.array([100, -100]).reshape(2,-1))
 goal.append(np.array([-100, -100]).reshape(2,-1))
 
-robustness_history = []
-H = [[] for i in range(n-leaders)]
-
 
 #Construct the robustness HOCBF 
-q1 = 0.02
-p1 = jnp.log(1/q1)
-q2 = 0.02
-p2 = jnp.log(1/q2)
+q_A = 0.02
+q = 0.02
 s_A = 6
 s = 3
-
-relu = lambda x: (1+q1)/(1+jnp.exp(-s_A*x+p1))-q1
-relu2 = lambda x: (1+q2)/(1+jnp.exp(-s*x+ p2))-q2
+sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
+sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
 @jit 
 def barrier_func(x):
@@ -112,13 +107,13 @@ def barrier_func(x):
         A = jnp.array([[0.0 for i in range(n)] for j in range(n)]) 
         for i in range(n):
             for j in range(i+1, n):
-                dis = dif-jnp.linalg.norm(x[i]-x[j])
-                A = A.at[j,i].set(relu(dis))
-                A = A.at[i,j].set(relu(dis))  
+                dis = R-jnp.linalg.norm(x[i]-x[j])
+                A = A.at[j,i].set(sigmoid_A(dis))
+                A = A.at[i,j].set(sigmoid_A(dis))  
         return A
     def body(i, inputs):
         temp_x = A @ jnp.concatenate([jnp.array([1.0 for p in range(leaders)]),inputs])
-        state_vector = relu2(temp_x[leaders:]-r)
+        state_vector = sigmoid(temp_x[leaders:]-r)
         return state_vector
     
     state_vector = jnp.array([0.0 for p in range(n-leaders)])
@@ -130,7 +125,7 @@ def barrier_func(x):
 barrier_grad = jit(jax.jacrev(barrier_func))
 barrier_double_grad = jit(jax.hessian(barrier_func))
 
-def smoothened_strongly_r_robust_simul(robots, dif, r):      
+def smoothened_strongly_r_robust_simul(robots, R, r):      
     h = barrier_func(robots)
     h_dot = barrier_grad(robots)
     h_ddot =  barrier_double_grad(robots)
@@ -148,7 +143,7 @@ for t in range(num_steps):
 
     #Compute the actual robustness
     A = np.zeros((n, n))
-    dp.unsmoothened_adjacency(dif, A, robots_location)
+    dp.unsmoothened_adjacency(R, A, robots_location)
     f = n-leaders
     robustness_history.append(dp.strongly_r_robust(A,leaders, f))
 
@@ -176,7 +171,7 @@ for t in range(num_steps):
             aa.set_color()
 
     # h_{3,c}, gradient, and hessian
-    x, der_, double_der_  = compiled(robots_location, dif, r)
+    x, der_, double_der_  = compiled(robots_location, R, r)
     x = np.asarray(x);der_ = np.asarray(der_);double_der_ = np.asarray(double_der_)
     print(t, x)
 
@@ -250,7 +245,7 @@ plt.show()
 for i in range(n-leaders):
     plt.plot(np.arange(num_steps)*dt, H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
 plt.plot(np.arange(num_steps)*dt, [0]*num_steps,linestyle='dashed', label="Safety Line", color = 'black')
-# plt.legend(loc='upper right')
+plt.legend(loc='upper right')
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
