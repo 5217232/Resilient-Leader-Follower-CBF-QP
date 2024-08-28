@@ -63,7 +63,7 @@ container =[]
 
 for ii in range(50):
 
-    broadcast_value = randint(600,766)
+    broadcast_value = randint(600,1000)
     plt.ion()
     fig = plt.figure()
     ax = plt.axes(xlim=(-5,5),ylim=(-5,10)) 

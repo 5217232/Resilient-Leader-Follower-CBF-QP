@@ -1,7 +1,9 @@
 import numpy as np
 from random import randint
-from scipy.integrate import odeint,solve_ivp 
+from scipy.integrate import solve_ivp 
 from statistics import median
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 class Agent:
     def __init__(self,location, color, palpha, ax, F,shape="o"):
@@ -15,7 +17,7 @@ class Agent:
         self.body = ax.scatter([],[],c=color,alpha=palpha,s=40, marker=shape)
         self.obs_h = np.ones((1,2))
         self.obs_alpha =  2.0*np.ones((1,2))#
-        self.value= randint(0,500)
+        self.value= randint(0,200)
         self.original = self.value
         self.connections = []
         self.F = F
@@ -62,15 +64,14 @@ class Agent:
         # plt.plot(self.locations[0], self.locations[1])
         #animate(x)
     def set_color(self):
-        if self.value < 256:
-            self.LED = (self.value/255, 0,0)
-            return self.LED
-        elif self.value < 511:
-            self.LED = (0.1, (self.value-256)/255,0.0)
-            return self.LED
-        else:
-            self.LED = (0.9, 0.5, (self.value-511)/255)
-            return self.LED
+        # Get the colormap
+        cmap = plt.get_cmap('viridis')
+        # Map the value to the colormap
+        rgba = cmap(self.value/1000)
+        self.LED = [rgba[0], rgba[1], rgba[2]]
+        return self.LED
+    
+
     def agent_barrier(self,agent,d_min):
         h =  np.linalg.norm(self.location - agent.location)**2 - d_min**2 
         dh_dxi = 2*( self.location - agent.location[0:2]).T

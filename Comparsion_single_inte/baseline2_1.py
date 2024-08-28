@@ -25,7 +25,7 @@ ax.set_ylabel("Y")
 
 y_offset = -1.5
 F = 1
-broadcast_value = randint(600,766)
+broadcast_value = randint(600,1000)
 
 robots=[]
 robots.append( Leaders(broadcast_value, np.array([-0.7,y_offset]),'b',1.0, ax,F))

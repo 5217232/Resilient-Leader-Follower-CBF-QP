@@ -26,8 +26,8 @@ ax.set_xlabel("X")
 ax.set_ylabel("Y")
 
 y_offset =-1.5
-F = 0
-broadcast_value = randint(600,766)
+F = 1
+broadcast_value = randint(600,1000)
 
 robots=[]
 robots.append( Leaders(broadcast_value, np.array([-0.7,y_offset]),'b',1.0, ax,F))
@@ -227,8 +227,8 @@ while True:
         robots[i].step( u1.value[2*i:2*i+2]) 
         
 
-    # fig.canvas.draw()
-    # fig.canvas.flush_events()    
+    fig.canvas.draw()
+    fig.canvas.flush_events()    
     for aa in robots_location:
         if aa[1]<=4.0:
             break
@@ -236,7 +236,6 @@ while True:
         break
     counter+=1
     
-        # writer.grab_frame()
 
 counter+=1
 print("time:", counter*0.02)
