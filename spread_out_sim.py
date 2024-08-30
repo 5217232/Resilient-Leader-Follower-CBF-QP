@@ -46,7 +46,7 @@ num_steps = int(tf/dt)
 robots = []
 leaders = 6
 F = int((leaders-1)/2)
-broadcast_value = randint(600,1000)
+broadcast_value = randint(0,1000)
 y_offset = -0.3 
 #Initialize robots 
 
@@ -55,8 +55,8 @@ robots.append( Leaders(broadcast_value, jnp.array([-0.7,y_offset+0.2,0,0]),'b',1
 robots.append( Leaders(broadcast_value, jnp.array([1,y_offset+0.2,0,0]),'b',1.0, ax, F))
 robots.append( Leaders(broadcast_value, jnp.array([0.7,y_offset + 1.5,0,0]),'b',1.0, ax, F))
 robots.append( Leaders(broadcast_value, jnp.array([0.2,y_offset-1,0,0]),'b',1.0, ax, F))
-robots.append( Malicious([0,500], jnp.array([-1.1,y_offset - 0.7,0,0]),'r',1.0, ax, F,marker="s"))
-robots.append( Malicious([0,500], jnp.array([1.4,y_offset,0,0]),'r',1.0, ax, F))
+robots.append( Malicious([0,1000], jnp.array([-1.1,y_offset - 0.7,0,0]),'r',1.0, ax, F,marker="s"))
+robots.append( Malicious([0,1000], jnp.array([1.4,y_offset,0,0]),'r',1.0, ax, F))
 robots.append( Agent(jnp.array([-1.2,y_offset - 0.3,0,0]),'g',1.0 , ax, F))
 robots.append( Agent(jnp.array([0.7,y_offset + 0.3,0,0]),'g',1.0 , ax, F))
 robots.append( Agent(jnp.array([1.2,y_offset - 0.9,0,0]),'g',1.0 , ax, F))
@@ -250,4 +250,16 @@ plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
 plt.yticks(np.arange(-0.1, 1.3, 0.2))
+plt.show()
+
+
+#Plot the evolutions of consensus values representing the RGB values
+length_of_consensus = len(robots[0].history)
+for aa in robots:
+        if issubclass(type(aa), Malicious):
+            plt.plot(range(0,length_of_consensus),np.array(aa.history)/1000, "r--")
+        elif issubclass(type(aa), Leaders):
+            plt.plot(range(0,length_of_consensus), np.array(aa.history)/1000, "b")
+        else:
+            plt.plot(range(0,length_of_consensus), np.array(aa.history)/1000, "g")
 plt.show()

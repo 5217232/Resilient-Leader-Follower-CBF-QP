@@ -20,7 +20,7 @@ class Agent:
         self.body = ax.scatter([],[],c=color,alpha=palpha,s=50, marker=shape)
         self.obs_h = np.ones((1,2))
         self.obs_alpha =  2.0*np.ones((1,2))#
-        self.value= randint(0,300)
+        self.value= randint(0,1000)
         self.original = self.value
         self.connections = []
         self.F = F
@@ -29,7 +29,7 @@ class Agent:
         self.previous = self.x
         self.prevprev = None
         self.values = []
-        self.history = []
+        self.history = [self.value]
 
     def f(self):
         return np.array([[0,0,1,0],[0,0,0,1],[0,0,0,0],[0,0,0,0]])
@@ -152,7 +152,7 @@ class Leaders(Agent):
     def __init__(self, value, location, color, palpha, ax, F,marker="o"):
         super().__init__(location, color, palpha, ax, F,marker)
         self.value=value
-        self.history = []
+        self.history = [self.value]
 
     def propagate(self):
         for neigh in self.neighbors():

@@ -25,7 +25,7 @@ ax.set_ylabel("Y")
 
 y_offset = -1.5
 F = 1
-broadcast_value = randint(600,1000)
+broadcast_value = randint(0,1000)
 
 robots=[]
 robots.append( Leaders(broadcast_value, np.array([-0.7,y_offset]),'b',1.0, ax,F))
@@ -35,7 +35,7 @@ robots.append( Leaders(broadcast_value, np.array([1.1,y_offset - 2.4]),'b',1.0, 
 robots.append( Agent(np.array([-1.1,y_offset - 0.5]),'g',1.0, ax, F))
 robots.append( Agent(np.array([-0.7,y_offset - 1.0]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([0.8,y_offset - 1.2]),'g',1.0 , ax, F))
-robots.append( Malicious([0,500],np.array([1.1,y_offset - 1.7]),'r',1.0 , ax, F))
+robots.append( Malicious([0,1000],np.array([1.1,y_offset - 1.7]),'r',1.0 , ax, F))
 robots.append( Agent(np.array([-1.0,y_offset - 2.1]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([0.5,y_offset - 1.6]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([-0.4,y_offset - 1.9]),'g',1.0 , ax, F))
@@ -118,7 +118,7 @@ while True:
         u1_ref.value[2*i] = vector[0][0]
         u1_ref.value[2*i+1] = vector[1][0]
     #Perform W-MSR
-    if counter>25 and counter/25 % 1==0:
+    if counter/20 % 1==0:
         for i in range(n):
             for j in range(i+1,n):
                 if A[i,j] ==1:
@@ -176,8 +176,8 @@ while True:
     for i in range(n):
         robots[i].step( u1.value[2*i:2*i+2])        
 
-    # fig.canvas.draw()
-    # fig.canvas.flush_events()    
+    fig.canvas.draw()
+    fig.canvas.flush_events()    
     for aa in robots_location:
         if aa[1]<=4.0:
             break

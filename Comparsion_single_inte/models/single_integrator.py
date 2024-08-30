@@ -17,12 +17,12 @@ class Agent:
         self.body = ax.scatter([],[],c=color,alpha=palpha,s=40, marker=shape)
         self.obs_h = np.ones((1,2))
         self.obs_alpha =  2.0*np.ones((1,2))#
-        self.value= randint(0,200)
+        self.value= randint(0,1000)
         self.original = self.value
         self.connections = []
         self.F = F
         self.values = []
-        self.history = []
+        self.history = [self.value]
         self.set_color()
 
     def f(self):
@@ -134,7 +134,7 @@ class Leaders(Agent):
         self.value=value
         self.set_color()
 
-        self.history = []
+        self.history = [self.value]
 
     def propagate(self):
         for neigh in self.neighbors():
