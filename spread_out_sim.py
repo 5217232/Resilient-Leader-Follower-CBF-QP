@@ -228,7 +228,6 @@ for t in range(num_steps):
         robots[i].step2( u1.value[2*i:2*i+2]) 
         if t>0:
             plt.plot(robots[i].locations[0][t-1:t+1], robots[i].locations[1][t-1:t+1], color = robots[i].LED, zorder=0) 
-
     fig.canvas.draw()
     fig.canvas.flush_events()
 
@@ -254,12 +253,13 @@ plt.show()
 
 
 #Plot the evolutions of consensus values representing the RGB values
-length_of_consensus = len(robots[0].history)
+length_of_consensus = len(robots[0].history)*20
 for aa in robots:
+        temp = np.repeat(np.array(aa.history)/1000,20)
         if issubclass(type(aa), Malicious):
-            plt.plot(range(0,length_of_consensus),np.array(aa.history)/1000, "r--")
+            plt.plot(np.arange(0,length_of_consensus)*dt,temp, "r--")
         elif issubclass(type(aa), Leaders):
-            plt.plot(range(0,length_of_consensus), np.array(aa.history)/1000, "b")
+            plt.plot(np.arange(0,length_of_consensus)*dt, temp, "b")
         else:
-            plt.plot(range(0,length_of_consensus), np.array(aa.history)/1000, "g")
+            plt.plot(np.arange(0,length_of_consensus)*dt, temp, "g")
 plt.show()

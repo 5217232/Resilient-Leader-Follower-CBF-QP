@@ -153,24 +153,6 @@ while True:
             b1.value[obs_collision] = -obs_alpha*h
             obs_collision+=1  
     
-
-    # weight_first = 6
-    # A1.value[0:,] = beta*weight_first*np.exp(-weight_first*(np.real(algebraic)-4-0.01))
-    # inter_count =[];obs=[]
-    # for i in range(n):
-    #     for j in range(i+1,n):
-    #         weight =18
-    #         h, dh_dxi, dh_dxj = robots[i].agent_barrier(robots[j], inter_agent_collision)
-    #         A1.value[0][2*i:2*i+2]+= dh_dxi.reshape((1,-1))[0]*np.exp(-weight*h)*weight
-    #         A1.value[0][2*j:2*j+2]+= dh_dxj.reshape((1,-1))[0]*np.exp(-weight*h)*weight
-    #         inter_count.append(-weight*h)
-    # for i in range(n):
-    #     for j in range(num_obstacles):
-    #         weight = 18
-    #         h, dh_dxi, dh_dxj = robots[i].agent_barrier(obstacles[j], obstacles[j].radius+0.1)
-    #         A1.value[0][2*i:2*i+2]+= dh_dxi.reshape((1,-1))[0]*np.exp(-weight*h)*weight
-    #         obs.append(-weight*h)
-    # b1.value[0] = -3*(1-np.sum(np.exp([-weight_first*(algebraic-4-0.01)] + inter_count + obs) ))
     print("eigenvalue:", algebraic)
     cbf_controller.solve(solver=cp.GUROBI)
     for i in range(n):

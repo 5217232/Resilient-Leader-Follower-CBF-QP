@@ -70,7 +70,7 @@ robots.append( Agent(np.array([-0.7,y_offset - 1.0,0,0]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([0.8,y_offset - 1.2,0,0]),'g',1.0 , ax, F))
 robots.append( Malicious([0,1000],np.array([1.1,y_offset - 1.7,0,0]),'r',1.0 , ax, F))
 robots.append( Agent(np.array([-1.0,y_offset - 2.1,0,0]),'g',1.0 , ax, F))
-robots.append( Agent(np.array([0.5,y_offset - 1.6,0,0]),'g',1.0 , ax, F))
+robots.append( Agent(np.array([0.4,y_offset - 1.6,0,0]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([-0.5,y_offset - 1.9,0,0]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([-0.8,y_offset - 1.9,0,0]),'g',1.0 , ax, F))
 robots.append( Agent(np.array([-0.5,y_offset - 2.4,0,0]),'g',1.0 , ax, F))
@@ -277,12 +277,13 @@ plt.show()
 
 
 #Plot the evolutions of consensus values representing the RGB values
-length_of_consensus = len(robots[0].history)
+length_of_consensus = len(robots[0].history)*20
 for aa in robots:
+        temp = np.repeat(np.array(aa.history)/1000,20)
         if issubclass(type(aa), Malicious):
-            plt.plot(range(0,length_of_consensus),np.array(aa.history)/1000, "r--")
+            plt.plot(np.arange(0,length_of_consensus)*dt,temp, "r--")
         elif issubclass(type(aa), Leaders):
-            plt.plot(range(0,length_of_consensus), np.array(aa.history)/1000, "b")
+            plt.plot(np.arange(0,length_of_consensus)*dt, temp, "b")
         else:
-            plt.plot(range(0,length_of_consensus), np.array(aa.history)/1000, "g")
+            plt.plot(np.arange(0,length_of_consensus)*dt, temp, "g")
 plt.show()

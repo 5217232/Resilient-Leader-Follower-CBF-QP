@@ -200,30 +200,14 @@ while True:
 
 
 
-    # for i in range(n-leaders):
-    #     A1.value[0,:]=weight[i]*np.exp(-weight[i]*x[i])*der_[i][:].reshape(1,-1)[0]
-    #     hs.append(-weight[i]*x[i])
-    # inter_count =[];obs=[]
-    # for i in range(n):
-    #     for j in range(i+1,n):
-    #         weighted =12
-    #         h, dh_dxi, dh_dxj = robots[i].agent_barrier(robots[j], inter_agent_collision)
-    #         A1.value[0][2*i:2*i+2]+= dh_dxi.reshape(1,-1)[0]*np.exp(-weighted*h)*weighted
-    #         A1.value[0][2*j:2*j+2]+= dh_dxj.reshape(1,-1)[0]*np.exp(-weighted*h)*weighted
-    #         inter_count.append(-weighted*h)
-    # for i in range(n):
-    #     for j in range(num_obstacles):
-    #         weighted = 12
-    #         h, dh_dxi, dh_dxj = robots[i].agent_barrier(obstacles[j], obstacles[j].radius+0.1)
-    #         A1.value[0][2*i:2*i+2]+= dh_dxi.reshape(1,-1)[0]*np.exp(-weighted*h)*weighted
-    #         obs.append(-weighted*h)
-    # b1.value[0] = -1.5*(1-np.sum(np.exp(hs + inter_count + obs) ))
 
     cbf_controller.solve(solver=cp.GUROBI)
     for i in range(n):
         robots[i].step( u1.value[2*i:2*i+2]) 
-        
+        if counter>0:
+                plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
 
+        
     fig.canvas.draw()
     fig.canvas.flush_events()    
     for aa in robots_location:
