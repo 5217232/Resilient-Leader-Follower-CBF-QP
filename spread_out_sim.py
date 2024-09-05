@@ -15,7 +15,7 @@ def unsmoothened_adjacency(R, A, robots):
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= R:
+            if norm < R:
                 A[i,j] =1
                 A[j,i] =1
 
@@ -97,31 +97,36 @@ goal.append(np.array([-100, -100]).reshape(2,-1))
 epsilon = 0.0001
 q_A = 0.02
 q = 0.02
-s_A = 6
-s = 3
+s_A = 2
+s = 1.5
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
 @jit 
 def barrier_func(x):
     def AA(x):
-        A = jnp.array([[0.0 for i in range(n)] for j in range(n)]) 
-        for i in range(n):
-            for j in range(i+1, n):
-                dis = R-jnp.linalg.norm(x[i]-x[j])
-                A = A.at[j,i].set(sigmoid_A(dis))
-                A = A.at[i,j].set(sigmoid_A(dis))  
-        return A
+        A = jnp.zeros((n,n))
+        def body_i(i, inputs1):
+            def body_j(j, inputs):
+                dis = R**2-jnp.sum((x[i]-x[j])**2)
+                return jax.lax.cond(dis>=0,lambda x: inputs.at[i,j].set(sigmoid_A(dis**2)), lambda x: inputs.at[i,j].set(0), dis) 
+            return lax.fori_loop(0, n, body_j, inputs1)
+        A = lax.fori_loop(0, n, body_i, A)
+
+        def bodyD(i, inputs):
+            return inputs.at[i,i].set(0.0)
+        return lax.fori_loop(0, n, bodyD,A)
+    
     def body(i, inputs):
-        temp_x = A @ jnp.concatenate([jnp.array([1.0 for p in range(leaders)]),inputs])
+        temp_x = A @ jnp.append( jnp.ones((leaders,1)), inputs, axis=0 )
         state_vector = sigmoid(temp_x[leaders:]-r)
         return state_vector
     
-    state_vector = jnp.array([0.0 for p in range(n-leaders)])
+    state_vector = jnp.zeros((n-leaders,1))
     A = AA(x)
     delta = 4
     x = jax.lax.fori_loop(0, delta, body, state_vector) 
-    return x
+    return x[:,0]
 
 barrier_grad = jit(jax.jacrev(barrier_func))
 barrier_double_grad = jit(jax.hessian(barrier_func))
@@ -229,8 +234,8 @@ for t in range(num_steps):
         robots[i].step2( u1.value[2*i:2*i+2]) 
         if t>0:
             plt.plot(robots[i].locations[0][t-1:t+1], robots[i].locations[1][t-1:t+1], color = robots[i].LED, zorder=0) 
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+    # fig.canvas.draw()
+    # fig.canvas.flush_events()
 
 
 
@@ -245,11 +250,11 @@ plt.show()
 for i in range(n-leaders):
     plt.plot(np.arange(num_steps)*dt, H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
 plt.plot(np.arange(num_steps)*dt, [0]*num_steps,linestyle='dashed', label="Safety Line", color = 'black')
-plt.legend(loc='upper right')
+# plt.legend(loc='upper right')
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
-plt.yticks(np.arange(-0.1, 1.3, 0.2))
+plt.yticks(np.arange(-0.1, 0.5, 0.1))
 plt.show()
 
 

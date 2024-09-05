@@ -14,7 +14,7 @@ def unsmoothened_adjacency(R, A, robots):
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= R:
+            if norm < R:
                 A[i,j] =1
                 A[j,i] =1
 
@@ -98,8 +98,8 @@ r = leaders-1
 
 q_A = 0.02
 q = 0.02
-s_A = 4.75
-s = 2.5
+s_A = 1.2
+s = 1.4
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
@@ -107,23 +107,28 @@ sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 @jit 
 def barrier_func(x):
     def AA(x):
-        A = jnp.array([[0.0 for i in range(n)] for j in range(n)]) 
-        for i in range(n):
-            for j in range(i+1, n):
-                dis = R-jnp.linalg.norm(x[i]-x[j])
-                A = A.at[j,i].set(sigmoid_A(dis))
-                A = A.at[i,j].set(sigmoid_A(dis))  
-        return A
+        A = jnp.zeros((n,n))
+        def body_i(i, inputs1):
+            def body_j(j, inputs):
+                dis = R**2-jnp.sum((x[i]-x[j])**2)
+                return lax.cond(dis>=0,lambda x: inputs.at[i,j].set(sigmoid_A(dis**2)), lambda x: inputs.at[i,j].set(0), dis) 
+            return lax.fori_loop(0, n, body_j, inputs1)
+        A = lax.fori_loop(0, n, body_i, A)
+
+        def bodyD(i, inputs):
+            return inputs.at[i,i].set(0.0)
+        return lax.fori_loop(0, n, bodyD,A)
+    
     def body(i, inputs):
-        temp_x = A @ jnp.concatenate([jnp.array([1.0 for p in range(leaders)]),inputs])
+        temp_x = A @ jnp.append( jnp.ones((leaders,1)), inputs, axis=0 )
         state_vector = sigmoid(temp_x[leaders:]-r)
         return state_vector
     
-    state_vector = jnp.array([0.0 for p in range(n-leaders)])
+    state_vector = jnp.zeros((n-leaders,1))
     A = AA(x)
-    delta = 5
+    delta = 4
     x = lax.fori_loop(0, delta, body, state_vector) 
-    return x
+    return x[:,0]
 
 barrier_grad = jit(jacrev(barrier_func))
 
@@ -205,6 +210,6 @@ while True:
         break
     counter+=1
     
-
 counter+=1
+
 print("time:", counter*0.02)

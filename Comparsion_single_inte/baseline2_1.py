@@ -165,6 +165,7 @@ while True:
     fig.canvas.flush_events()    
     for aa in robots_location:
         if aa[1]<=4.0:
+
             break
     else:
         break
