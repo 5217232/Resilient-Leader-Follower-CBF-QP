@@ -46,6 +46,7 @@ num_obstacles = len(obstacles)
 ########################################################################
 
 # Sim Parameters 
+epsilon = 0.0001
 dt = 0.025                 
 num_steps = 800
 robots = []
@@ -209,8 +210,8 @@ while True:
     robustes = []
     for k in range(num_robots-leaders):
         h_dot = der_[k].reshape(1,-1)[0] @ robots_velocity.reshape(-1,1)
-        weightee = ((weight[k])*np.exp(-weight[k]*(h_dot+alphas*x[k])))[0]
-        robustes.append((h_dot+alphas*x[k])[0])
+        weightee = ((weight[k])*np.exp(-weight[k]*(h_dot+alphas*(x[k]-epsilon))))[0]
+        robustes.append((h_dot+alphas*(x[k]-epsilon))[0])
         A1.value[0,:]+= weightee * der_[k].reshape(1,-1)[0]
 
         temp = []
