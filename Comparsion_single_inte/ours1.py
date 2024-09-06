@@ -87,7 +87,7 @@ const1 = [A1 @ u1 >= b1]
 objective1 = cp.Minimize( cp.sum_squares( u1 - u1_ref  ) )
 cbf_controller = cp.Problem( objective1, const1 )
 ###################################################################################################
-
+epsilon = 0.0001
 inter_agent_collision =0.3
 obtacle=0.7
 R =2.5
@@ -163,7 +163,7 @@ while True:
         u1_ref.value[2*i] = vector[0][0]
         u1_ref.value[2*i+1] = vector[1][0]
     #Perform W-MSR
-    if counter/20 % 1==0:
+    if counter/25 % 1==0:
         for i in range(n):
             for j in range(i+1,n):
                 if A[i,j] ==1:
@@ -185,8 +185,8 @@ while True:
     A1.value[0,:] = [0]*(2*n)
 
     for i in range(n-leaders):
-        A1.value[0,:]=weight[i]*np.exp(-weight[i]*x[i])*der_[i][:].reshape(1,-1)[0]
-        hs.append(np.exp(-weight[i]*x[i]))
+        A1.value[0,:]=weight[i]*np.exp(-weight[i]*(x[i]-epsilon))*der_[i][:].reshape(1,-1)[0]
+        hs.append(np.exp(-weight[i]*(x[i]-epsilon)))
     b1.value[0]= -0.5*(1-sum(hs))
     for i in range(n):
         for j in range(i+1,n):
