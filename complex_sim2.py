@@ -271,7 +271,7 @@ plt.plot(np.arange(counter)*dt, [0]*len(range(counter)),linestyle='dashed', labe
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
-plt.yticks(np.arange(-0.1, 1.3, 0.2))
+plt.yticks(np.arange(-0.05, 1.1, 0.1))
 plt.show()
 
 #Plot the evolutions of consensus values representing the RGB values

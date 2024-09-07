@@ -273,11 +273,11 @@ plt.show()
 for i in range(n-leaders):
     plt.plot(np.arange(counter)*dt, H[i], label="$h_{" + f"{r}," + str(i+1)+ '}$')
 plt.plot(np.arange(counter)*dt, [0]*len(range(counter)),linestyle='dashed', label="Safety Line", color = 'black')
-plt.legend(loc='upper right')
+# plt.legend(loc='upper right')
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
-plt.yticks(np.arange(-0.1, 1.3, 0.2))
+plt.yticks(np.arange(-0.05, 1.1, 0.1))
 plt.show()
 
 
