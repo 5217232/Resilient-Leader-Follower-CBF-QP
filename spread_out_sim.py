@@ -97,7 +97,7 @@ goal.append(np.array([-100, -100]).reshape(2,-1))
 epsilon = 0.0001
 q_A = 0.02
 q = 0.02
-s_A = 2
+s_A = 2.5
 s = 1.5
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
@@ -234,8 +234,8 @@ for t in range(num_steps):
         robots[i].step2( u1.value[2*i:2*i+2]) 
         if t>0:
             plt.plot(robots[i].locations[0][t-1:t+1], robots[i].locations[1][t-1:t+1], color = robots[i].LED, zorder=0) 
-    # fig.canvas.draw()
-    # fig.canvas.flush_events()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
 
 
@@ -254,7 +254,7 @@ plt.plot(np.arange(num_steps)*dt, [0]*num_steps,linestyle='dashed', label="Safet
 plt.title("$h_{"+f"{r}"+",c}$ values")
 plt.xlabel("$t$")
 plt.ylabel("$h_{"+f"{r}"+",c}$")
-plt.yticks(np.arange(-0.1, 0.5, 0.1))
+plt.yticks(np.arange(-0.05, 0.45, 0.1))
 plt.show()
 
 
