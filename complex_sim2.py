@@ -99,8 +99,8 @@ H = [[] for i in range(n-leaders)]
 #Build the parametrized sigmoid functions
 q_A = 0.02
 q = 0.02
-s_A = 1.4
-s = 1.5
+s_A = 1.3
+s = 1.6
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
@@ -112,7 +112,7 @@ def barrier_func(x):
         def body_i(i, inputs1):
             def body_j(j, inputs):
                 dis = R**2-jnp.sum((x[i]-x[j])**2)
-                return lax.cond(dis>=0,lambda x: inputs.at[i,j].set(sigmoid_A(dis**2)), lambda x: inputs.at[i,j].set(0), dis) 
+                return lax.cond(dis>=0,lambda x: inputs.at[i,j].set(sigmoid_A(dis**3)), lambda x: inputs.at[i,j].set(0), dis) 
             return lax.fori_loop(0, n, body_j, inputs1)
         A = lax.fori_loop(0, n, body_i, A)
 

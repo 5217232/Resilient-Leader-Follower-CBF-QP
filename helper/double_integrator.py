@@ -17,7 +17,7 @@ class Agent:
         shape = marker
         if type(self)==Leaders:
             shape = "s"
-        self.body = ax.scatter([],[],c=color,alpha=palpha,s=50, marker=shape)
+        self.body = ax.scatter([],[],c=color,alpha=palpha,s=40, marker=shape)
         self.obs_h = np.ones((1,2))
         self.obs_alpha =  2.0*np.ones((1,2))#
         self.value= randint(0,1000)
