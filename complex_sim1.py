@@ -107,7 +107,7 @@ for k in range(leaders):
 #Define the parametrized sigmoid functions
 q_A = 0.02
 q = 0.02
-s_A = 0.7
+s_A = 1.4
 s = 1.6
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
@@ -119,7 +119,7 @@ def barrier_func(x):
         def body_i(i, inputs1):
             def body_j(j, inputs):
                 dis = R**2-jnp.sum((x[i]-x[j])**2)
-                return lax.cond(dis>=0,lambda x: inputs.at[i,j].set(sigmoid_A(dis**3)), lambda x: inputs.at[i,j].set(0), dis) 
+                return lax.cond(dis>=0,lambda x: inputs.at[i,j].set(sigmoid_A(dis**2)), lambda x: inputs.at[i,j].set(0), dis) 
             return lax.fori_loop(0, n, body_j, inputs1)
         A = lax.fori_loop(0, n, body_i, A)
 
@@ -248,8 +248,8 @@ while True:
     # implement control input \mathbf u and plot the trajectory
     for i in range(num_robots):
         robots[i].step2( u1.value[2*i:2*i+2]) 
-        if counter>0:
-            plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
+        # if counter>0:
+        #     plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
     fig.canvas.draw()
     fig.canvas.flush_events()  
     for aa in robots_location:
