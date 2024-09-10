@@ -277,11 +277,11 @@ plt.show()
 #Plot the evolutions of consensus values representing the RGB values
 length_of_consensus = len(robots[0].history)*20
 for aa in robots:
-        temp = np.repeat(np.array(aa.history)/1000,20)
-        if issubclass(type(aa), Malicious):
-            plt.plot(np.arange(0,length_of_consensus)*dt,temp, "r--")
-        elif issubclass(type(aa), Leaders):
-            plt.plot(np.arange(0,length_of_consensus)*dt, temp, "b")
-        else:
-            plt.plot(np.arange(0,length_of_consensus)*dt, temp, "g")
+    temp = np.repeat(np.array(aa.history)/1000,20)
+    if issubclass(type(aa), Malicious):
+        plt.plot(np.arange(0,length_of_consensus)*dt,temp, "r--")
+    elif issubclass(type(aa), Leaders):
+        plt.plot(np.arange(0,length_of_consensus)*dt, temp, "b")
+    else:
+        plt.plot(np.arange(0,length_of_consensus)*dt, temp, "g")
 plt.show()
