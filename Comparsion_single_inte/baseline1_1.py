@@ -55,9 +55,9 @@ goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
-inter_alpha = 1.5
+inter_alpha = 2
 robustnfess = 4
-obs_alpha = 1.5
+obs_alpha = 2
 times_exceeded =0
 container =[]
 
@@ -169,7 +169,7 @@ for ii in range(50):
             dh_dxi= -2*(robots_location[i]-robots_location[j]).T
             A1.value[connections][2*i:2*i+2] = dh_dxi
             A1.value[connections][2*j:2*j+2] = -dh_dxi
-            b1.value[connections] = -0.9*h
+            b1.value[connections] = -0.5*h
             connections+=1
         inter_count = total
 
@@ -199,7 +199,7 @@ for ii in range(50):
         if counter >= num_steps:
             break
         counter+=1
-
+  
     counter+=1
     if counter>2500:
         times_exceeded+=1

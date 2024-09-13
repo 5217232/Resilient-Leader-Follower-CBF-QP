@@ -162,7 +162,7 @@ for ii in range(100):
             dh_dxi= -2*(robots_location[i]-robots_location[j]).T
             A1.value[connections][2*i:2*i+2] = dh_dxi
             A1.value[connections][2*j:2*j+2] = -dh_dxi
-            b1.value[connections] = -0.9*h
+            b1.value[connections] = -2*h
             connections+=1
         inter_count = total
 

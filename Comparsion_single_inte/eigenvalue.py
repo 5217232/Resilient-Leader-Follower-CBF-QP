@@ -26,7 +26,9 @@ def smoothened_adjacency(robots,dif,n):
                 A[j][i]=0
     return A,sigma
 
+
 slope = 6
+
 sigmoid = lambda x: 1/(1+np.exp(-slope*x))
 
 def smoothened_adjacency(robots,dif,n):
@@ -95,9 +97,6 @@ def mu_m(robots_location,dif):
                 temp = -(robots_location[i]-robots_location[j])/np.linalg.norm(robots_location[i]-robots_location[j])
                 if np.linalg.norm(robots_location[i]-robots_location[j]) ==0:
                     temp =0
-                # dist = (dif**2-np.linalg.norm(robots_location[i]-robots_location[j])**2)
-                # der = np.exp((dist**2)/sigma)
-                # temp = -4*dist/sigma*np.array(robots_location[i]-robots_location[j])
                 sum+=der*temp*(e_vecs[i]-e_vecs[j])**2
         beta.append(sum[0]);beta.append(sum[1])
     return e_vals, np.array(beta).reshape(1,-1)
