@@ -191,11 +191,6 @@ for ii in range(50):
         cbf_controller.solve(solver=cp.GUROBI)
         for i in range(n):
             robots[i].step( u1.value[2*i:2*i+2]) 
-            if counter>0:
-                plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
-
-        fig.canvas.draw()
-        fig.canvas.flush_events()    
         for aa in robots_location:
             if aa[1]<=4.0:
                 break
@@ -204,8 +199,6 @@ for ii in range(50):
         if counter >= num_steps:
             break
         counter+=1
-
-            # writer.grab_frame()
 
     counter+=1
     if counter>2500:
