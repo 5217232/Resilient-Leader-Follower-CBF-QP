@@ -9,15 +9,6 @@ import matplotlib.pyplot as plt
 from jax import lax, jit, jacrev, hessian
 from jax import numpy as jnp
 
-def unsmoothened_adjacency(R, A, robots):
-    n= len(robots)
-    for i in range(n):
-        for j in range(i+1, n):
-            norm = np.linalg.norm(robots[i]-robots[j])
-            if norm < R:
-                A[i,j] =1
-                A[j,i] =1
-
 
 plt.ion()
 fig = plt.figure()
@@ -25,10 +16,22 @@ ax = plt.axes(xlim=(-5,5),ylim=(-5,7))
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
 
-y_offset =-1.5
+# Sim Parameters 
 F = 1
-broadcast_value = randint(0,1000)
+epsilon = 0.0001
+inter_agent_collision =0.3
+obtacle=0.7
+R =2.5
+num_steps = 2000
+leaders = 4
+inter_alpha = 2
+obs_alpha = 2
+r = leaders-1
 
+
+#Initialize the robots
+broadcast_value = randint(0,1000)
+y_offset =-1.5
 robots=[]
 robots.append( Leaders(broadcast_value, np.array([-0.7,y_offset]),'b',1.0, ax,F))
 robots.append( Leaders(broadcast_value, np.array([0,y_offset]),'b',1.0, ax, F))
@@ -67,7 +70,6 @@ obstacles.append(circle(0.9,1.0,radius,ax,0))
 obstacles.append(circle(-0.9,1.9,radius,ax,0))
 obstacles.append(circle(0.9,2.5,radius,ax,0))
 obstacles.append(circle(0.0,4.0,.3,ax,0))
-
 obstacles.append(circle(-1.4, 0.1,radius,ax,0))
 obstacles.append(circle(1.4, 0.1,radius,ax,0))
 obstacles.append(circle(-1.6, -0.1,radius,ax,0))
@@ -76,35 +78,29 @@ obstacles.append(circle(1.6, -0.1,radius,ax,0))
 num_obstacles = len(obstacles)
 ########################################################################
 
-total = 1
+
 # ##################################### 1: CBF Controller###################################
 u1 = cp.Variable((2*n,1))
 u1_ref = cp.Parameter((2*n,1),value = np.zeros((2*n,1)) )
-num_constraints1  = total + inter_agent + num_obstacles*n
+num_constraints1  = 1 + inter_agent + num_obstacles*n
 A1 = cp.Parameter((num_constraints1,2*n),value=np.zeros((num_constraints1,2*n)))
 b1 = cp.Parameter((num_constraints1,1),value=np.zeros((num_constraints1,1)))
 const1 = [A1 @ u1 >= b1]
 objective1 = cp.Minimize( cp.sum_squares( u1 - u1_ref  ) )
 cbf_controller = cp.Problem( objective1, const1 )
 ###################################################################################################
-epsilon = 0.0001
-inter_agent_collision =0.3
-obtacle=0.7
-R =2.5
-num_steps = 2000
-leaders = 4
+
+#Setting the goal
 goal = []
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 
-inter_alpha = 2
-obs_alpha = 2
 
-counter = 0
-r = leaders-1
 
+
+#Build the parametrized sigmoid functions
 q_A = 0.02
 q = 0.02
 s_A = 1.8
@@ -112,6 +108,9 @@ s = 1.8
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
+
+
+######################Computes the \bar {\pi}_{\mathcal F}######################
 @jit 
 def barrier_func(x):
     def AA(x):
@@ -144,50 +143,69 @@ def smoothened_strongly_r_robust_simul(robots, R, r):
     h = barrier_func(robots)
     h_dot = barrier_grad(robots)
     return h, h_dot
+###############################################################################
 
-
+#Set the weight vector \mathbf w
 weight = np.array([5]*(n-leaders))
+
+#Compiled the construction of robust maintenance CBF
 compiled = jit(smoothened_strongly_r_robust_simul)
+
+#Initialize the counter
+counter = 0
 
 while True:
     robots_location = np.array([aa.location for aa in robots])
+
+    #Compute the actual robustness
     A = np.zeros((n, n))
-    unsmoothened_adjacency(R, A, robots_location)
+    dp.unsmoothened_adjacency(R, A, robots_location)
     delta = np.count_nonzero(A)
     dp.strongly_r_robust(A,leaders, delta)
 
-
+    #Get the nominal control input \mathbf u_{nom}
     for i in range(n):
         vector = goal[i % leaders] - robots[i].location 
         vector = vector/np.linalg.norm(vector)
         u1_ref.value[2*i] = vector[0][0]
         u1_ref.value[2*i+1] = vector[1][0]
-    #Perform W-MSR
+
     if counter/25 % 1==0:
+        #Agents form a network
         for i in range(n):
             for j in range(i+1,n):
                 if A[i,j] ==1:
                     robots[i].connect(robots[j])
                     robots[j].connect(robots[i])
+        #Agents share their values with neighbors
         for aa in robots:
             aa.propagate()
+        # The followers perform W-MSR
         for aa in robots:
             aa.w_msr()
+        # All the agents update their LED colors
         for aa in robots:
             aa.set_color()
             
+
+    # h_{3,c} and gradient
     x, der_  = compiled(robots_location, R, r)
     x=np.asarray(x);der_=np.asarray(der_)
     print("t:",counter*0.02," and edges:", delta)
     print(x)
-    inter_count = total
-    hs = []
+
+    #Initialize the constraint of QP
     A1.value[0,:] = [0]*(2*n)
 
+    #Calculate the Robustness CBF
+    inter_count = 1
+    hs = [] 
     for i in range(n-leaders):
         A1.value[0,:]=weight[i]*np.exp(-weight[i]*(x[i]-epsilon))*der_[i][:].reshape(1,-1)[0]
         hs.append(np.exp(-weight[i]*(x[i]-epsilon)))
     b1.value[0]= -0.5*(1-sum(hs))
+
+    #Inter-agent collision avoidance
     for i in range(n):
         for j in range(i+1,n):
             h, dh_dxi, dh_dxj = robots[i].agent_barrier(robots[j], inter_agent_collision)
@@ -195,7 +213,9 @@ while True:
             A1.value[inter_count][2*j:2*j+2] = dh_dxj
             b1.value[inter_count] = -inter_alpha*h
             inter_count+=1
-    obs_collision = total + inter_agent
+    obs_collision = 1 + inter_agent
+
+    #Obstacle Collision avoidance
     for i in range(n):
         for j in range(num_obstacles):
             h, dh_dxi, dh_dxj = robots[i].agent_barrier(obstacles[j], obstacles[j].radius+0.1)
@@ -203,21 +223,24 @@ while True:
             b1.value[obs_collision] = -obs_alpha*h
             obs_collision+=1  
 
-
-
-
+    #Solve the CBF-QP and get the control input \mathbf u
     cbf_controller.solve(solver=cp.GUROBI)
+
+    # implement control input \mathbf u and plot the trajectory
     for i in range(n):
         robots[i].step( u1.value[2*i:2*i+2]) 
-        if counter>0:
-                plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
 
-        
+        #Colors the trajectories in their current LED colors
+        if counter>0:
+            plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
+
+    #Plots the environment and robots
     fig.canvas.draw()
-    fig.canvas.flush_events()    
+    fig.canvas.flush_events() 
+
+    #If all robots have reached the exits, terminate
     for aa in robots_location:
         if aa[1]<=4.0:
-
             break
     else:
         break

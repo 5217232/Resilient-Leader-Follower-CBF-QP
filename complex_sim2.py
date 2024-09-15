@@ -9,22 +9,11 @@ from helper.double_integrator import *
 from random import randint
 from jax import lax, jit, jacrev, hessian
 
-
-def unsmoothened_adjacency(R, A, robots):
-    n= len(robots)
-    for i in range(n):
-        for j in range(i+1, n):
-            norm = jnp.linalg.norm(robots[i]-robots[j])
-            if norm < R:
-                A[i,j] =1
-                A[j,i] =1
-
 plt.ion()
 fig = plt.figure()
 ax = plt.axes(xlim=(-5,5),ylim=(-5,7)) 
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
-# ax.set_aspect(1)
 
 ########################## Make Obatacles ###############################
 obstacles = []
@@ -48,12 +37,15 @@ num_obstacles = len(obstacles)
 # Sim Parameters 
 epsilon = 0.0001
 dt = 0.025                 
-num_steps = 800
-robots = []
-y_offset = -1.5
 leaders = 4
 F = 1
+R = 3
+r= 3
+
+#Initialize the robots
+robots = []
 broadcast_value = randint(0,1000)
+y_offset = -1.5
 robots.append( Leaders(broadcast_value, np.array([-0.8,y_offset,0,0]),'b',1.0, ax,F))
 robots.append( Leaders(broadcast_value, np.array([0,y_offset,0,0]),'b',1.0, ax, F))
 robots.append( Leaders(broadcast_value, np.array([-1.1,y_offset - 1.2,0,0]),'b',1.0, ax, F))
@@ -83,9 +75,6 @@ const1 = [A1 @ u1 >= b1]
 objective1 = cp.Minimize( cp.sum_squares( u1 - u1_ref  ) )
 cbf_controller = cp.Problem( objective1, const1 )
 ###################################################################################################
-R = 3
-r= 3
-
 
 #Setting the goal
 goal = []
@@ -105,6 +94,7 @@ sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
 
+######################Computes the \bar {\pi}_{\mathcal F}######################
 @jit 
 def barrier_func(x):
     def AA(x):
@@ -139,9 +129,12 @@ def smoothened_strongly_r_robust_simul(robots, R, r):
     h_dot = barrier_grad(robots)
     h_ddot =  barrier_double_grad(robots)
     return h, h_dot, h_ddot
+###############################################################################
 
-
+#Set the weight vector \mathbf w
 weight = np.array([6]*(num_robots-leaders) + [18]*inter_collision + [18]*(num_obstacles*n))
+
+#Compiled the construction of robust maintenance HOCBF
 compiled = jit(smoothened_strongly_r_robust_simul)
 
 
@@ -150,8 +143,10 @@ counter = 0
 while True:   
     robots_location = np.array([aa.x.reshape(1,-1)[0] for aa in robots])
     robots_velocity = np.array([aa.v.reshape(1,-1)[0] for aa in robots])
+
+    #Compute the actual robustness
     A = np.zeros((n, n))
-    unsmoothened_adjacency(R, A, robots_location)
+    dp.unsmoothened_adjacency(R, A, robots_location)
     f = n-leaders
     robustness_history.append(dp.strongly_r_robust(A,leaders, f))
 
@@ -163,17 +158,22 @@ while True:
         temp = np.array([[vector[0][0]-current[0]], [vector[1][0]-current[1]]])
         u1_ref.value[2*i] = temp[0][0]
         u1_ref.value[2*i+1] = temp[1][0]
-    #Perform W-MSR
+
+
     if counter/20 % 1==0:
+        #Agents form a network
         for i in range(n):
             for j in range(i+1,n):
                 if A[i,j] ==1:
                     robots[i].connect(robots[j])
                     robots[j].connect(robots[i])
+        #Agents share their values with neighbors
         for aa in robots:
             aa.propagate()
+        # The followers perform W-MSR
         for aa in robots:
             aa.w_msr()
+        # All the agents update their LED colors
         for aa in robots:
             aa.set_color()
 
@@ -183,7 +183,7 @@ while True:
     x=np.asarray(x);der_=np.asarray(der_);double_der_=np.asarray(double_der_)
     print(counter, x)
 
-
+    #Initialize the constraint of QP
     A1.value[0,:] = [0 for i in range(2*num_robots)]
     b1.value[0] = 0
 
@@ -230,7 +230,7 @@ while True:
     for i in range(n-leaders):
         H[i].append(x[i])
 
-    #Composition 
+    #Composition into \phi(x,w)
     sum_h = 1 - np.sum(np.exp(-weight*np.array(robustes + collision + ob)))
     b1.value[0]-=2.2*(sum_h)
 
@@ -242,10 +242,16 @@ while True:
     # implement control input \mathbf u and plot the trajectory
     for i in range(num_robots):
         robots[i].step2( u1.value[2*i:2*i+2]) 
+
+        #Colors the trajectories in their current LED colors
         if counter>0:
             plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
+    
+    #Plots the environment and robots
     fig.canvas.draw()
     fig.canvas.flush_events()  
+
+    #If all robots have reached the exits, terminate
     for aa in robots_location:
         if aa[1]<=4.0:
             break

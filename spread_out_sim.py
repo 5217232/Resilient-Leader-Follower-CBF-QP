@@ -10,25 +10,6 @@ import jax
 from jax import jit, lax
 
 
-def unsmoothened_adjacency(R, A, robots):
-    n= len(robots)
-    for i in range(n):
-        for j in range(i+1, n):
-            norm = np.linalg.norm(robots[i]-robots[j])
-            if norm < R:
-                A[i,j] =1
-                A[j,i] =1
-
-
-def unsmoothened_adjacency(R, A, robots):
-    n = len(A)
-    for i in range(n):
-        for j in range(i+1, n):
-            norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= R:
-                A[i][j] =1
-                A[j][i] = 1
-
 plt.ion()
 fig = plt.figure()
 ax = plt.axes(xlim=(-3,3),ylim=(-3,3)) 
@@ -36,20 +17,18 @@ ax.set_xlabel("X")
 ax.set_ylabel("Y")
 
 
-# Sim Parameters                  
+# Sim Parameters    
+epsilon = 0.0001              
 dt = 0.025
 tf = 15
 num_steps = int(tf/dt)
-
-
-#Initialize robots 
-robots = []
 leaders = 6
-F = int((leaders-1)/2)
+F = 2
+
+#Initialize the robots
+robots = []
 broadcast_value = randint(0,1000)
 y_offset = -0.3 
-#Initialize robots 
-
 robots.append( Leaders(broadcast_value, jnp.array([-1.5,y_offset,0,0]),'b',1.0, ax,F))
 robots.append( Leaders(broadcast_value, jnp.array([-0.7,y_offset+0.2,0,0]),'b',1.0, ax, F))
 robots.append( Leaders(broadcast_value, jnp.array([1,y_offset+0.2,0,0]),'b',1.0, ax, F))
@@ -93,8 +72,7 @@ goal.append(np.array([100, -100]).reshape(2,-1))
 goal.append(np.array([-100, -100]).reshape(2,-1))
 
 
-#Construct the robustness HOCBF 
-epsilon = 0.0001
+#Build the parametrized sigmoid functions
 q_A = 0.02
 q = 0.02
 s_A = 2.5
@@ -102,6 +80,8 @@ s = 1.5
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
+
+######################Computes the \bar {\pi}_{\mathcal F}######################
 @jit 
 def barrier_func(x):
     def AA(x):
@@ -136,8 +116,9 @@ def smoothened_strongly_r_robust_simul(robots, R, r):
     h_dot = barrier_grad(robots)
     h_ddot =  barrier_double_grad(robots)
     return h, h_dot, h_ddot
+###############################################################################
 
-#Set the values of \mathbf w
+#Set the weight vector \mathbf w
 weight = np.array([7]*(num_robots-leaders) + [10]*inter_collision)
 
 #Compiled the construction of robust maintenance HOCBF
@@ -162,17 +143,20 @@ for t in range(num_steps):
         u1_ref.value[2*i] = temp[0][0]
         u1_ref.value[2*i+1] = temp[1][0]
 
-    #Perform W-MSR and update their LED colors
     if t/20 % 1==0:
+        #Agents form a network
         for i in range(n):
             for j in range(i+1,n):
                 if A[i,j] ==1:
                     robots[i].connect(robots[j])
                     robots[j].connect(robots[i])
+        #Agents share their values with neighbors
         for aa in robots:
             aa.propagate()
+        # The followers perform W-MSR
         for aa in robots:
             aa.w_msr()
+        # All the agents update their LED colors
         for aa in robots:
             aa.set_color()
 
@@ -181,6 +165,7 @@ for t in range(num_steps):
     x = np.asarray(x);der_ = np.asarray(der_);double_der_ = np.asarray(double_der_)
     print(t, x)
 
+    #Initialize the constraint of QP
     A1.value[0,:] = [0 for i in range(2*num_robots)]
     b1.value[0] = 0
 
@@ -219,7 +204,7 @@ for t in range(num_steps):
     for i in range(n-leaders):
             H[i].append(float(x[i]))
 
-    #Composition of HOCBFs
+    #Composition into \phi(x,w)
     sum_h = 1 - np.sum(np.exp(-weight*np.array(robustes + collision)))
     b1.value[0]-=2*(sum_h)
 
@@ -232,8 +217,12 @@ for t in range(num_steps):
     # implement control input \mathbf u and plot the trajectory
     for i in range(num_robots):
         robots[i].step2( u1.value[2*i:2*i+2]) 
+
+        #Colors the trajectories in their current LED colors
         if t>0:
             plt.plot(robots[i].locations[0][t-1:t+1], robots[i].locations[1][t-1:t+1], color = robots[i].LED, zorder=0) 
+    
+    #Plots the environment and robots
     fig.canvas.draw()
     fig.canvas.flush_events()
 
