@@ -14,15 +14,15 @@ def unsmoothened_adjacency(R, A, robots):
                 A[i][j] =1
                 A[j][i] = 1
 
-#Computes the strong r robustness of a graph with its adjacency matrix A, number of leaders, and number of iterations
-def strongly_r_robust(A,leaders, f):
+#Computes the strong r robustness of a graph with its adjacency matrix A, number of leaders, and number of iterations delta
+def strongly_r_robust(A,leaders, delta):
     n= len(A)
     max_r = leaders
     ans_r =0
     max_r+=1
     for r in range(1,max_r+1):
         x = np.array([1 for p in range(leaders)] + [0 for p in range(n-leaders)])
-        for i in range(f):
+        for i in range(delta):
             temp_x = A @ x
             temp_x = np.array([np.heaviside(temp_x[k]-r,1) for k in range(n)])
             x = x + temp_x
