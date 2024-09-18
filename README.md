@@ -17,15 +17,12 @@ To run each simulation, you just need to run the corresponding python file.
 
 
 # spread_out_sim
-
 https://github.com/user-attachments/assets/2f664a28-7aa2-4345-9de8-e39ead7725a8
 
 # complex_sim1
-
 https://github.com/user-attachments/assets/97d9329a-348e-464c-903e-4e6657dbe9bb
  
 # complex_sim2
-
 https://github.com/user-attachments/assets/6485eaa9-4f78-4334-ada4-f47b82e0a8cb
 
 
