@@ -15,11 +15,19 @@ In this repository, we have three different simulations: `spread_out_sim`, `comp
    
 To run each simulation, you just need to run the corresponding python file. 
 
-|Name |Simulation|
-| -----------------| ------------------|
-| `spread_out_sim` | ![spread_out](https://github.com/user-attachments/assets/ddd7d555-b7ff-4532-a9d6-981a93473c33)|
-| `complex_sim1`   | ![complex1](https://github.com/user-attachments/assets/523627f3-56a5-43f5-bf99-92539215da26)|
-| `complex_sim2`   |![complex2](https://github.com/user-attachments/assets/281d881e-0c69-4457-b790-d3c3cde4077a)|
+
+# spread_out_sim
+
+https://github.com/user-attachments/assets/2f664a28-7aa2-4345-9de8-e39ead7725a8
+
+# complex_sim1
+
+https://github.com/user-attachments/assets/97d9329a-348e-464c-903e-4e6657dbe9bb
+ 
+# complex_sim2
+
+https://github.com/user-attachments/assets/6485eaa9-4f78-4334-ada4-f47b82e0a8cb
+
 
 
 
