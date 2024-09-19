@@ -8,21 +8,33 @@ from models.obstacles import *
 import matplotlib.pyplot as plt
 import networkx as nx
 
+'''
+This code implements Baseline 1 in Environment 2. In Baseline 1, it uses a CBF-QP controller where CBFs encode 
+the maintenance of a given graph topology. We run simulations in Environment 2 100 times with randomly generated strongly 
+r-robust graph. The simulation terminates when either 1) all robots reach the exits or 2) go over the 
+given time thresold (set as 50 s). 
+'''
+
+#Computes the unweighted adjacency matrix for undirected graphs.
 def adjacency_undirected(edges,A):
     for (i,j) in edges:
         A[i][j]=1
         A[j][i]=1
 
+#Randomly generate a strongly r-robust graph.
 def generate_random_strongly_r_g(n, leaders, AA):
+    #Randomly generate a graph and compute its adjancy matrix.
     G = nx.gnp_random_graph(n, 0.3)
     A = np.zeros((n,n))
     adjacency_undirected(G.edges,A)
     while True:
-        nice = False
+        graph_fit = False
+        #Check if the randomly generated graph is strongly (leader-1)-robust.
         if dp.strongly_r_robust(A,leaders, int(np.sum(A)/2)) == leaders-1:
+            #Check if the randomly generated graph fits the initial positions of robots. If so, break. Otherwise, go back.
             for (i,j) in G.edges:
-                nice = (AA[i,j]==A[i,j])
-                if not nice:
+                graph_fit = (AA[i,j]==A[i,j])
+                if not graph_fit:
                     break
             else:
                 break
@@ -32,39 +44,43 @@ def generate_random_strongly_r_g(n, leaders, AA):
     return G.edges
 
 
-
-def unsmoothened_adjacency(dif, A, robots):
+#computes the distance-based adjacency (proximity) matrix with communication range R and positions of robots.
+def unsmoothened_adjacency(R, A, robots):
     n= len(robots)
     for i in range(n):
         for j in range(i+1, n):
             norm = np.linalg.norm(robots[i]-robots[j])
-            if norm <= dif:
+            if norm <= R:
                 A[i,j] =1
                 A[j,i] =1
 
 
-y_offset =-1.5
-F = 0
-leaders = 4
-dif =3
-inter_agent_collision =0.3
 
+#sim parameters
+F=1
+y_offset =-1.5
+leaders = 4
+R =3
+inter_agent_collision =0.3
 num_steps = 2500
+inter_alpha = 1.5
+robustness = 4
+obs_alpha = 1.5
+times_exceeded =0
+
+
+#Setting the goal positions
 goal = []
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
 goal.append(np.array([0, 100]).reshape(2,-1))
-inter_alpha = 1.5
-robustness = 4
-obs_alpha = 1.5
-times_exceeded =0
+
 container =[]
 
+#Run 100 simulations
 for ii in range(100):
-
     broadcast_value = randint(0,1000)
-    plt.ion()
     fig = plt.figure()
     ax = plt.axes(xlim=(-5,5),ylim=(-5,10)) 
     ax.set_xlabel("X")
@@ -84,11 +100,10 @@ for ii in range(100):
     obstacles.append(circle(-1.2, 2.3,radius,ax,0))
     obstacles.append(circle(-0.5, 3.3,radius,ax,0))
     obstacles.append( circle( 1.75,4,radius,ax,0 ) )
-
-
     num_obstacles = len(obstacles)
 ########################################################################
 
+    #Initialize robots
     robots=[]
     robots.append( Leaders(broadcast_value, np.array([-0.8,y_offset]),'b',1.0, ax,F))
     robots.append( Leaders(broadcast_value, np.array([0,y_offset]),'b',1.0, ax, F))
@@ -111,7 +126,7 @@ for ii in range(100):
     robots_location = np.array([aa.location for aa in robots])
 
     A = np.zeros((n, n))
-    unsmoothened_adjacency(dif, A, robots_location)
+    unsmoothened_adjacency(R, A, robots_location)
     randomly_generated_fixed_topology = generate_random_strongly_r_g(n, leaders, A)
 
 
@@ -128,37 +143,43 @@ for ii in range(100):
     ###################################################################################################
 
     counter=0
-
     while True:
         robots_location = np.array([aa.location for aa in robots])
         A = np.zeros((n, n))
-        unsmoothened_adjacency(dif, A, robots_location)
+        unsmoothened_adjacency(R, A, robots_location)
         delta = np.count_nonzero(A)
         dp.strongly_r_robust(A,leaders, delta)
         print(ii, "-t:",counter*0.02," and edges:", delta)
 
+        #Set the nominal control input
         for i in range(leaders):
             vector = goal[i % leaders] - robots[i].location 
             vector = vector/np.linalg.norm(vector)
             u1_ref.value[2*i] = vector[0][0]
             u1_ref.value[2*i+1] = vector[1][0]
+
         #Perform W-MSR
         if counter/20 % 1==0:
+            #Agents form a network
             for i in range(n):
                 for j in range(i+1,n):
                     if A[i,j] ==1:
                         robots[i].connect(robots[j])
                         robots[j].connect(robots[i])
+            #Agents share their values with neighbors
             for aa in robots:
                 aa.propagate()
+            # The followers perform W-MSR
             for aa in robots:
                 aa.w_msr()
+            # All the agents update their LED colors
             for aa in robots:
                 aa.set_color()
-                
+        
+        #Graph topology maintenace CBF
         connections = 0
         for (i,j) in randomly_generated_fixed_topology:
-            h = dif - np.linalg.norm(robots_location[i]-robots_location[j])
+            h = R - np.linalg.norm(robots_location[i]-robots_location[j])
             dh_dxi= -2*(robots_location[i]-robots_location[j]).T
             A1.value[connections][2*i:2*i+2] = dh_dxi
             A1.value[connections][2*j:2*j+2] = -dh_dxi
@@ -166,6 +187,7 @@ for ii in range(100):
             connections+=1
         inter_count = total
 
+        #Inter-agent collision avoidance
         for i in range(n):
             for j in range(i+1,n):
                 h, dh_dxi, dh_dxj = robots[i].agent_barrier(robots[j], inter_agent_collision)
@@ -174,6 +196,8 @@ for ii in range(100):
                 b1.value[inter_count] = -inter_alpha*h
                 inter_count+=1
         obs_collision = total + inter_agent
+
+        #Obstacle Collision avoidance
         for i in range(n):
             for j in range(num_obstacles):
                 h, dh_dxi, dh_dxj = robots[i].agent_barrier(obstacles[j], obstacles[j].radius+0.1)
@@ -181,14 +205,19 @@ for ii in range(100):
                 b1.value[obs_collision] = -obs_alpha*h
                 obs_collision+=1  
 
+        #Solve the CBF-QP and get the control input
         cbf_controller.solve(solver=cp.GUROBI)
+        #Implement the control input
         for i in range(n):
-            robots[i].step( u1.value[2*i:2*i+2])   
+            robots[i].step( u1.value[2*i:2*i+2])  
+
+        #If all the robots have reached the exists, terminate 
         for aa in robots_location:
             if aa[1]<=4.0:
                 break
         else:
             break
+        #If over time, terminate
         if counter >= num_steps:
             break
         counter+=1

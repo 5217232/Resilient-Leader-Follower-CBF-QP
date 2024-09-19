@@ -156,7 +156,7 @@ while True:
         u1_ref.value[2*i] = vector[0][0]
         u1_ref.value[2*i+1] = vector[1][0]
 
-    if counter/25 % 1==0:
+    if counter/20 % 1==0:
         #Agents form a network
         for i in range(n):
             for j in range(i+1,n):
