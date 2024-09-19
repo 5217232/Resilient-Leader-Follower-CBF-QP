@@ -26,6 +26,16 @@ https://github.com/user-attachments/assets/97d9329a-348e-464c-903e-4e6657dbe9bb
 # complex_sim2
 https://github.com/user-attachments/assets/6485eaa9-4f78-4334-ada4-f47b82e0a8cb
 
+# Baselines
+You can test the baseline algorithms:
+
+Baseline 1 implements a CBF-QP controller whose CBF encodes maintenance of randomly genreated strong $r$-robust graph topologies.
+
+Baseline 2 implements a CBF-QP controller whose CBF encodes maintenace of $r$-robustness. Check [this](https://ieeexplore.ieee.org/document/10354416) for more information.
+
+We have implemented the codes in the settings of the `complex_sim1` and `complex_sim2`. Note the simulations for comparisons are all implemented in single integrator dynamics.
+The python files can be found at `Comparsion_single_integrator` folder. 
+
 
 
 
