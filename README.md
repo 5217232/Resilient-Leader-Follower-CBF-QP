@@ -1,6 +1,6 @@
 # Resilient-Leader-Follower-CBF-QP-Controller
 
-This repository contains the implementation of Strong $r$-robustness maintenance CBF-QP Controller. This guarantees the multi-robot network to maintain the sufficient number of connections among robots such a way that the robots can perform leader-follower consensus despite the presence of misbehaving agents. Contrary to the previous works that either maintain graph topologies with known robustness or control indirect measures to control robustness, our CBF directly addresses robustness without fixed formations. The algorithm also includes inter-agent and obstacle collision avoidances encoded as additional HOCBFs. For more information, see our paper.
+This repository contains the implementation of Strong $r$-robustness maintenance Control Barrier Function-based Quadratic Programming (CBF-QP) Controller. This guarantees the multi-robot network to maintain the sufficient number of connections among robots such a way that the robots can achieve leader-follower consensus despite the presence of misbehaving agents. Contrary to the previous works that assume robots can maintain predetermined graph topologies with known robustness properties, our CBF directly addresses robustness without imposing any fixed topology. This allows the robots to flexibely form reconfigurable communication networks with desired levels of strong $r$-robustness while navigating in spatially restrictive environments. The algorithm also includes inter-agent and obstacle collision avoidances encoded as additional HOCBFs. We present three different scenarios, whose videos are shown below. Hardware experiments can be seen at here. For more information, please refer to our paper.
 
 
 # Dependencies
@@ -13,8 +13,7 @@ In this repository, we have three different simulations: `spread_out_sim`, `comp
 1) `spread_out_sim` shows the simulation of robots spreading out in an open space.
 2) `complex_sim1` and `complex_sim2` show the simulation of robots going through some complex environments with obstacles.
    
-To run each simulation, you just need to run the corresponding python file. 
-
+To run each simulation scenario, you just need to run the corresponding python files. 
 
 # spread_out_sim
 https://github.com/user-attachments/assets/2f664a28-7aa2-4345-9de8-e39ead7725a8
@@ -24,6 +23,8 @@ https://github.com/user-attachments/assets/97d9329a-348e-464c-903e-4e6657dbe9bb
  
 # complex_sim2
 https://github.com/user-attachments/assets/6485eaa9-4f78-4334-ada4-f47b82e0a8cb
+
+
 
 
 
