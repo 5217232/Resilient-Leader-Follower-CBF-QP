@@ -252,8 +252,8 @@ while True:
             plt.plot(robots[i].locations[0][counter-1:counter+1], robots[i].locations[1][counter-1:counter+1], color = robots[i].LED, zorder=0)            
     
     #Plots the environment and robots
-    fig.canvas.draw()
-    fig.canvas.flush_events()  
+    # fig.canvas.draw()
+    # fig.canvas.flush_events()  
 
     #If all robots have reached the exits, terminate
     for aa in robots_location:
