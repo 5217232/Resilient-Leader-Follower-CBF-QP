@@ -66,7 +66,7 @@ inter_agent_collision =0.3
 num_steps = 2500
 inter_alpha = 2
 robustnfess = 4
-obs_alpha = 0.6
+obs_alpha = 2
 times_exceeded =0
 alpha = 0.5
 
@@ -102,7 +102,7 @@ for ii in range(50):
     obstacles.append(circle(0.9,1.0,radius,ax,0))
     obstacles.append(circle(-0.9,1.9,radius,ax,0))
     obstacles.append(circle(0.9,2.5,radius,ax,0))
-    obstacles.append(circle(0.0,4.0,.25,ax,0))
+    obstacles.append(circle(0.0,4.0,.3,ax,0))
     obstacles.append(circle(-1.4, 0.1,radius,ax,0))
     obstacles.append(circle(1.4, 0.1,radius,ax,0))
     obstacles.append(circle(-1.6, -0.1,radius,ax,0))
@@ -225,7 +225,7 @@ for ii in range(50):
         
         #If all the robots have reached the exists, terminate 
         for aa in robots_location:
-            if aa[1]<=3.85:
+            if aa[1]<=4.0:
                 break
         else:
             break

@@ -24,7 +24,7 @@ R =2.5
 num_steps = 2000
 leaders = 4
 inter_alpha = 2
-obs_alpha = 0.6
+obs_alpha = 2
 r = leaders-1
 
 
@@ -68,7 +68,7 @@ obstacles.append(circle(-0.9,0.5,radius,ax,0))
 obstacles.append(circle(0.9,1.0,radius,ax,0))
 obstacles.append(circle(-0.9,1.9,radius,ax,0))
 obstacles.append(circle(0.9,2.5,radius,ax,0))
-obstacles.append(circle(0.0,4.0,.25,ax,0))
+obstacles.append(circle(0.0,4.0,.3,ax,0))
 obstacles.append(circle(-1.4, 0.1,radius,ax,0))
 obstacles.append(circle(1.4, 0.1,radius,ax,0))
 obstacles.append(circle(-1.6, -0.1,radius,ax,0))
@@ -102,8 +102,8 @@ goal.append(np.array([0, 100]).reshape(2,-1))
 #Build the parametrized sigmoid functions
 q_A = 0.02
 q = 0.02
-s_A = 1.3
-s = 2.2
+s_A = 1.8 #1.3
+s = 1.8 #2.2
 sigmoid_A = lambda x: (1+q_A)/(1+(1/q_A)*jnp.exp(-s_A*x))-q_A
 sigmoid = lambda x: (1+q)/(1+(1/q)*jnp.exp(-s*x))-q
 
@@ -143,7 +143,7 @@ def smoothened_strongly_r_robust_simul(robots, R, r):
 ###############################################################################
 
 #Set the weight vector \mathbf w
-weight = np.array([4.5]*(n-leaders))
+weight = np.array([5]*(n-leaders))
 
 #Compiled the construction of robust maintenance CBF
 compiled = jit(smoothened_strongly_r_robust_simul)
@@ -215,7 +215,7 @@ while True:
     #Obstacle Collision avoidance
     for i in range(n):
         for j in range(num_obstacles):
-            h, dh_dxi, dh_dxj = robots[i].agent_barrier(obstacles[j], obstacles[j].radius)
+            h, dh_dxi, dh_dxj = robots[i].agent_barrier(obstacles[j], obstacles[j].radius+0.1)
             A1.value[obs_collision][2*i:2*i+2] = dh_dxi
             b1.value[obs_collision] = -obs_alpha*h
             obs_collision+=1  
@@ -237,7 +237,7 @@ while True:
 
     #If all robots have reached the exits, terminate
     for aa in robots_location:
-        if aa[1]<=3.85:
+        if aa[1]<=4.0:
             break
     else:
         break
