@@ -18,6 +18,9 @@ In this repository, we have three different simulations: `spread_out_sim`, `comp
    
 To run each simulation scenario, you just need to run the corresponding python files. 
 
+# Dynamics
+We have adopted double integrator dynamics model to simulate robots' motions. 
+
 # spread_out_sim
 https://github.com/user-attachments/assets/2f664a28-7aa2-4345-9de8-e39ead7725a8
 
@@ -34,8 +37,8 @@ Baseline 1 implements a CBF-QP controller whose CBF encodes maintenance of rando
 
 Baseline 2 implements a CBF-QP controller whose CBF encodes maintenace of $r$-robustness. Check [this](https://ieeexplore.ieee.org/document/10354416) for more information.
 
-We have implemented the codes in the settings of the `complex_sim1` and `complex_sim2`. Note the simulations for comparisons are all implemented in single integrator dynamics.
-The python files can be found at `Comparsion_single_integrator` folder. 
+We have implemented the codes in the settings of the `complex_sim1` and `complex_sim2`. Note in comparsion simulations, we used single integrator dynamics model to describe robots' motions.
+The python files can be found at `Comparsion_single_integrator` folder, where python file `baseline_i_j` indicates baseline $i$ in Environment $j$. Also, `ours_j` indicate our method in Environment $j$.
 
 
 
