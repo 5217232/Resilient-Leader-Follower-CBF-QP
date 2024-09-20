@@ -11,24 +11,25 @@ This repository requires the following libraries: **numpy**, **matplotlib**, **j
 
 For solving the CBF-QP, we need the following libraries: **cvxpy** and **gurobi**
 
+# Dynamics
+We have adopted double integrator dynamics model to simulate robots' motions. 
+
 # How to Run
 In this repository, we have three different simulations: `spread_out_sim`, `complex_sim1`, and `complex_sim2`.
 1) `spread_out_sim` shows the simulation of robots spreading out in an open space.
 2) `complex_sim1` and `complex_sim2` show the simulation of robots going through some complex environments with obstacles.
-   
+
 To run each simulation scenario, you just need to run the corresponding python files. 
-
-# Dynamics
-We have adopted double integrator dynamics model to simulate robots' motions. 
-
 # spread_out_sim
-https://github.com/user-attachments/assets/2f664a28-7aa2-4345-9de8-e39ead7725a8
+![spread_out_sim1-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c1151031-1a52-4621-9690-326304b47911)
+
 
 # complex_sim1
-https://github.com/user-attachments/assets/97d9329a-348e-464c-903e-4e6657dbe9bb
- 
+ ![narrow_sim1-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/564559c2-b1f4-4322-9ec6-9f74881e25c0)
+
 # complex_sim2
-https://github.com/user-attachments/assets/6485eaa9-4f78-4334-ada4-f47b82e0a8cb
+![obstacle_sim1-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/b2b1a954-8686-45b9-9c8b-83128c1fa3a6)
+
 
 # Baselines
 You can test the baseline algorithms:
