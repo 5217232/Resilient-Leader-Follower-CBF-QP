@@ -11,7 +11,7 @@ This repository requires the following libraries: **numpy**, **matplotlib**, **j
 
 For solving the CBF-QP, we need the following libraries: **cvxpy** and **gurobi**
 
-# Dynamics
+# Dynamics Model
 We have adopted double integrator dynamics model to simulate robots' motions. 
 
 # How to Run
