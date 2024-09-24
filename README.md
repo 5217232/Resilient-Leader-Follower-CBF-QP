@@ -41,6 +41,8 @@ Baseline 2 implements a CBF-QP controller whose CBF encodes maintenace of $r$-ro
 We have implemented the codes in the settings of the `complex_sim1` and `complex_sim2`. Note in comparsion simulations, we used single integrator dynamics model to describe robots' motions.
 The python files can be found at `Comparsion_single_integrator` folder, where python file `baseline_i_j` indicates baseline $i$ in Environment $j$. Also, `ours_j` indicate our method in Environment $j$.
 
+# For more Information...
+Please check our Paper: https://arxiv.org/abs/2409.14675
 
 
 
