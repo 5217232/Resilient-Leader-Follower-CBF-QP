@@ -19,7 +19,7 @@ In this repository, we have three different simulations: `spread_out_sim`, `comp
 1) `spread_out_sim` shows the simulation of robots spreading out in an open space.
 2) `complex_sim1` and `complex_sim2` show the simulation of robots going through some complex environments with obstacles.
 
-To run each simulation scenario, you just need to run the corresponding python files. 
+To run each simulation scenario, you just need to run the corresponding python file. 
 # spread_out_sim
 ![spread_out_sim1-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c1151031-1a52-4621-9690-326304b47911)
 
