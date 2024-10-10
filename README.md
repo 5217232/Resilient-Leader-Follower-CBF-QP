@@ -31,16 +31,6 @@ To run each simulation scenario, you just need to run the corresponding python f
 ![obstacle_sim1-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/b2b1a954-8686-45b9-9c8b-83128c1fa3a6)
 
 
-# Baselines
-You can test the baseline algorithms:
-
-Baseline 1 implements a CBF-QP controller whose CBF encodes maintenance of randomly genreated strong $r$-robust graph topologies.
-
-Baseline 2 implements a CBF-QP controller whose CBF encodes maintenace of $r$-robustness. Check [this](https://ieeexplore.ieee.org/document/10354416) for more information.
-
-We have implemented the codes in the settings of the `complex_sim1` and `complex_sim2`. Note in comparsion simulations, we used single integrator dynamics model to describe robots' motions.
-The python files can be found at `Comparsion_single_integrator` folder, where python file `baseline_i_j` indicates baseline $i$ in Environment $j$. Also, `ours_j` indicate our method in Environment $j$.
-
 # For more Information...
 Please check our Paper: https://arxiv.org/abs/2409.14675
 
